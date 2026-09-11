@@ -52,6 +52,8 @@
     unlockBtn:   $('unlockBtn'),
     toast:       $('toast'),
     gateStep:    $('gateStep'),
+    flash:       $('flash'),
+    railStatus:  $('railStatus'),
     topbar:      $('topbar')
   };
 
@@ -301,15 +303,15 @@
      list is curated so no hash can produce an ugly pairing.
      ===================================================================== */
   var PALETTES = [
-    { a: '#2b1846', b: '#8a3a7c', glow: '#d98ae4' },
-    { a: '#122549', b: '#3782ad', glow: '#79d6f2' },
-    { a: '#44171a', b: '#ad3a3a', glow: '#f2876f' },
-    { a: '#11302a', b: '#358264', glow: '#7ce6b4' },
-    { a: '#33230f', b: '#9c6a26', glow: '#ffca6b' },
-    { a: '#1b1b33', b: '#525a94', glow: '#a3aef5' },
-    { a: '#3a1b29', b: '#a84766', glow: '#f792ae' },
-    { a: '#0f2833', b: '#276e7d', glow: '#6fd8e3' },
-    { a: '#2c2016', b: '#95563a', glow: '#f5a87a' }
+    { a: '#1c1224', b: '#5e2a55', glow: '#c887cd' },
+    { a: '#0d1a2e', b: '#2a5f80', glow: '#7cc4de' },
+    { a: '#2c0f12', b: '#8f2329', glow: '#e2736a' },
+    { a: '#0d2019', b: '#276046', glow: '#74cba1' },
+    { a: '#241705', b: '#8a5a1c', glow: '#e8b65e' },
+    { a: '#141426', b: '#3e447a', glow: '#949ee0' },
+    { a: '#2a1119', b: '#87344b', glow: '#e08298' },
+    { a: '#0b1d25', b: '#1f5460', glow: '#6bc6d1' },
+    { a: '#22170e', b: '#7d442b', glow: '#e39a6e' }
   ];
 
   function hash(str) {
@@ -332,9 +334,9 @@
   // fit on its own, or it runs off the edge of the poster.
   function layoutTitle(title) {
     var words = String(title).toUpperCase().split(/\s+/).filter(Boolean);
-    var sizes = [52, 45, 39, 33, 28, 24, 20];
+    var sizes = [72, 62, 53, 45, 38, 32, 26];
     var avail = 336;              // 400 viewBox units minus left/right padding
-    var ratio = 0.63;             // rough advance width of bold uppercase Inter
+    var ratio = 0.44;             // Anton is condensed — much tighter than a grotesque
     var i, s;
 
     function wrap(maxChars) {
@@ -408,22 +410,31 @@
     }
   }
 
+  var lastPal = -1, lastKind = -1;
+
   function buildPoster(title, uid) {
     var h = hash(title || 'moviedrop');
-    var pal = PALETTES[h % PALETTES.length];
+
+    var pi = h % PALETTES.length;
+    if (pi === lastPal) pi = (pi + 4) % PALETTES.length;
+    lastPal = pi;
+    var pal = PALETTES[pi];
+
     var kind = (h >> 8) % 4;
+    if (kind === lastKind) kind = (kind + 1) % 4;
+    lastKind = kind;
     var t = layoutTitle(title);
 
-    var lineH = Math.round(t.size * 1.03);
-    var baseY = 548 - (t.lines.length - 1) * lineH;
+    var lineH = Math.round(t.size * 0.93);
+    var baseY = 540 - (t.lines.length - 1) * lineH;
 
     var text = t.lines.map(function (line, i) {
-      return '<text x="32" y="' + (baseY + i * lineH) + '" fill="#ffffff" ' +
-             'font-family="Inter, Helvetica Neue, Arial, sans-serif" font-weight="800" ' +
-             'font-size="' + t.size + '" letter-spacing="-1.4">' + esc(line) + '</text>';
+      return '<text x="32" y="' + (baseY + i * lineH) + '" fill="#f4ece1" ' +
+             'font-family="Anton, Arial Narrow, Impact, sans-serif" font-weight="400" ' +
+             'font-size="' + t.size + '" letter-spacing="0.4">' + esc(line) + '</text>';
     }).join('');
 
-    var ruleY = baseY - t.size - 22;
+    var ruleY = baseY - t.size - 20;
 
     return '' +
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 600" preserveAspectRatio="xMidYMid slice" role="presentation">' +
@@ -449,7 +460,7 @@
         motif(kind, pal, uid) +
         '<rect width="400" height="600" fill="url(#gl' + uid + ')"/>' +
         '<rect width="400" height="600" fill="url(#sc' + uid + ')"/>' +
-        '<rect x="32" y="' + ruleY + '" width="46" height="3" rx="1.5" fill="' + pal.glow + '"/>' +
+        '<rect x="32" y="' + ruleY + '" width="38" height="2" fill="' + pal.glow + '"/>' +
         '<g filter="url(#sh' + uid + ')">' + text + '</g>' +
       '</svg>';
   }
@@ -586,10 +597,10 @@
 
     img.onload = function () {
       if (!img.naturalWidth) return;           // zero-byte / corrupt response
-      var slot = card.querySelector('.poster');
+      var slot = card.querySelector('.poster__frame');
       if (!slot) return;
       img.className = 'poster__img';
-      slot.insertBefore(img, slot.querySelector('.poster__scrim'));
+      slot.appendChild(img);
       requestAnimationFrame(function () { img.classList.add('is-ready'); });
     };
     img.onerror = function () { /* generated poster stays — nothing to do */ };
@@ -630,37 +641,43 @@
   function buildCard(movie, i) {
     var card = document.createElement('article');
     card.className = 'card' + (unlocked ? ' is-unlocked' : '');
-    card.style.animationDelay = Math.min(i, 14) * 45 + 'ms';
+    card.style.setProperty('--d', Math.min(i, 11) * 65 + 'ms');
 
-    var hasLink = !!movie.link;
+    var no = String(i + 1).padStart(3, '0');
 
     var cta;
-    if (!hasLink) {
+    if (!movie.link) {
       cta = '<span class="card__cta card__cta--soon">' +
-              '<svg aria-hidden="true"><use href="#i-clock"/></svg>Link coming soon</span>';
+              '<svg aria-hidden="true"><use href="#i-clock"/></svg>Coming soon</span>';
     } else if (unlocked) {
       cta = '<a class="card__cta" href="' + esc(movie.link) + '" target="_blank" rel="noopener noreferrer" ' +
               'aria-label="Watch ' + esc(movie.title) + ' on ' + esc(movie.ott.label) + '">' +
               '<svg aria-hidden="true"><use href="#i-play"/></svg>Watch</a>';
     } else {
-      cta = '<a class="card__cta">' +
-              '<svg aria-hidden="true"><use href="#i-lock"/></svg>Locked</a>';
+      cta = '<a class="card__cta"><svg aria-hidden="true"><use href="#i-lock"/></svg>Locked</a>';
     }
 
     card.innerHTML =
       '<div class="poster">' +
-        '<div class="poster__art">' + buildPoster(movie.raw || movie.title, i) + '</div>' +
+        '<div class="poster__frame">' +
+          '<div class="poster__art">' + buildPoster(movie.raw || movie.title, i) + '</div>' +
+        '</div>' +
         '<div class="poster__scrim"></div>' +
+        '<div class="poster__glow" aria-hidden="true"></div>' +
+        '<div class="poster__sheen" aria-hidden="true"></div>' +
+        '<div class="poster__marks" aria-hidden="true"><span></span><span></span><span></span><span></span></div>' +
+        '<span class="poster__no" aria-hidden="true">FILM ' + no + '</span>' +
         '<span class="poster__tag" style="--ott:' + esc(movie.ott.color) + '">' + esc(movie.ott.label) + '</span>' +
-        '<div class="poster__lock">' +
-          '<span class="poster__lockIcon"><svg aria-hidden="true"><use href="#i-lock"/></svg></span>' +
-          '<span class="poster__lockText">Locked</span>' +
+        '<div class="poster__locked">' +
+          '<p class="poster__band">' +
+            '<svg aria-hidden="true"><use href="#i-lock"/></svg>Screening locked' +
+          '</p>' +
         '</div>' +
       '</div>' +
       '<div class="card__body">' +
         '<h3 class="card__title">' + esc(movie.title) + '</h3>' +
         '<p class="card__meta">' + esc(movie.ott.label) +
-          (movie.year ? ' <span aria-hidden="true">·</span> ' + esc(movie.year) : '') + '</p>' +
+          (movie.year ? '<i aria-hidden="true"></i>' + esc(movie.year) : '') + '</p>' +
         cta +
       '</div>';
 
@@ -676,8 +693,8 @@
     if (!list.length) {
       el.grid.hidden = true;
       el.notice.hidden = false;
-      el.noticeTitle.textContent = 'The drop is being restocked';
-      el.noticeCopy.textContent = 'New picks are on the way. Check back in a moment.';
+      el.noticeTitle.textContent = 'The projector is being threaded';
+      el.noticeCopy.textContent = 'New films are on the way. Check back in a moment.';
       el.sectionNote.textContent = '';
       return;
     }
@@ -694,9 +711,10 @@
     el.grid.hidden = false;
 
     var n = list.length;
-    el.sectionNote.textContent = n + (n === 1 ? ' pick' : ' picks') +
-      (unlocked ? ' · unlocked' : ' · locked');
-    el.heroCount.textContent = n + (n === 1 ? ' movie' : ' movies') + ' in this drop';
+    el.sectionNote.textContent = n + (n === 1 ? ' film' : ' films') +
+      ' · ' + (unlocked ? 'now showing' : 'locked');
+    el.heroCount.textContent = (unlocked ? 'Now showing' : 'This reel') +
+      ' · ' + n + (n === 1 ? ' film' : ' films');
     el.heroCount.hidden = false;
 
     hydratePosters(pairs);
@@ -706,8 +724,8 @@
     el.skeleton.hidden = true;
     el.grid.hidden = true;
     el.notice.hidden = false;
-    el.noticeTitle.textContent = 'Couldn’t load the drop';
-    el.noticeCopy.textContent = 'Something went wrong on the way here. Give it another go.';
+    el.noticeTitle.textContent = 'The reel didn’t arrive';
+    el.noticeCopy.textContent = 'Something broke on the way here. Give it another roll.';
     el.sectionNote.textContent = '';
   }
 
@@ -718,6 +736,12 @@
     el.gate.setAttribute('data-state', unlocked ? 'unlocked' : 'locked');
     el.gateLocked.hidden = unlocked;
     el.gateUnlocked.hidden = !unlocked;
+    document.body.classList.toggle('is-open', unlocked);
+    if (el.railStatus) {
+      el.railStatus.innerHTML = unlocked
+        ? 'SCREENING &nbsp;·&nbsp; OPEN'
+        : 'SCREENING &nbsp;·&nbsp; LOCKED';
+    }
     paintUnlockBtn();
   }
 
@@ -728,11 +752,13 @@
     el.unlockBtn.setAttribute('aria-disabled', String(!ready));
     el.unlockBtn.classList.toggle('is-primed', ready);
     el.unlockBtn.innerHTML = ready
-      ? '<svg aria-hidden="true"><use href="#i-unlock"/></svg>I&rsquo;ve Followed &mdash; Unlock Movies'
-      : '<svg aria-hidden="true"><use href="#i-lock"/></svg>Follow first to unlock';
+      ? '<svg aria-hidden="true"><use href="#i-unlock"/></svg>' +
+        '<span>I&rsquo;ve followed &mdash; open the screening</span>'
+      : '<svg aria-hidden="true"><use href="#i-lock"/></svg>' +
+        '<span>Follow first to open</span>';
     el.gateStep.textContent = ready
-      ? 'Back from Instagram? Tap to unlock.'
-      : 'Step 1 — follow. Step 2 unlocks right after.';
+      ? 'Back from Instagram? Take your seat.'
+      : 'Step 1 — follow. Step 2 opens the collection.';
   }
 
   var awaitingReturn = false;
@@ -777,6 +803,13 @@
     store.set(LS_UNLOCK, 'yes');
     paintGate();
 
+    // The lamp strikes once.
+    if (el.flash && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      el.flash.classList.remove('is-firing');
+      void el.flash.offsetWidth;                 // restart the animation
+      el.flash.classList.add('is-firing');
+    }
+
     // Re-point each locked CTA at its real destination.
     var cards = el.grid.querySelectorAll('.card');
     Array.prototype.forEach.call(cards, function (card, i) {
@@ -791,19 +824,21 @@
           cta.setAttribute('aria-label', 'Watch ' + movie.title + ' on ' + movie.ott.label);
           cta.innerHTML = '<svg aria-hidden="true"><use href="#i-play"/></svg>Watch';
         }
-      }, Math.min(i, 12) * 45);
+      }, 180 + Math.min(i, 14) * 55);
     });
 
     if (movies.length) {
       el.sectionNote.textContent = movies.length +
-        (movies.length === 1 ? ' pick' : ' picks') + ' · unlocked';
+        (movies.length === 1 ? ' film' : ' films') + ' · now showing';
+      el.heroCount.textContent = 'Now showing · ' + movies.length +
+        (movies.length === 1 ? ' film' : ' films');
     }
 
-    toast('Unlocked — every link is live.');
+    toast('Screening open — now showing');
 
     var drops = document.getElementById('drops');
     if (drops) {
-      setTimeout(function () { drops.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 220);
+      setTimeout(function () { drops.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 420);
     }
   }
 
@@ -814,7 +849,7 @@
     el.skeleton.hidden = false;
     el.grid.hidden = true;
     el.notice.hidden = true;
-    el.sectionNote.textContent = 'Loading tonight’s picks…';
+    el.sectionNote.textContent = 'Threading the reel…';
 
     loadSheet().then(render, function (err) {
       if (window.console) console.warn('[MovieDrop] sheet unavailable:', err && err.message);

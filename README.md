@@ -149,8 +149,9 @@ fine — posters fall back exactly as they would on a static host.
 ```
 index.html          the public page
 studio.html         owner-only poster picker
-assets/styles.css   theme, layout, components
+assets/styles.css   the visual system — tokens, layout, components
 assets/app.js       sheet loading, poster logic, follow gate
+assets/cinema.js    motion only — projector leader, reveals, parallax
 assets/studio.css   studio styles
 assets/studio.js    studio logic
 api/poster.js       poster resolver + candidate search (Vercel function)
