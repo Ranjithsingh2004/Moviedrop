@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MovieDrop Studio</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#08080B">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="assets/styles.css">
+<link rel="stylesheet" href="assets/studio.css">
+</head>
+<body class="studio">
+
+<!-- Passphrase screen -->
+<div class="lockScreen" id="lockScreen">
+  <form class="lockCard" id="lockForm">
+    <div class="wordmark">
+      <span class="wordmark__dot" aria-hidden="true"></span>
+      <span class="wordmark__text">MOVIE<span class="wordmark__accent">DROP</span></span>
+    </div>
+    <h1 class="lockCard__title">Studio</h1>
+    <p class="lockCard__copy">Poster picker for the drop. Enter the passphrase to continue.</p>
+    <input class="field" id="passInput" type="password" autocomplete="current-password"
+           placeholder="Passphrase" aria-label="Passphrase" required>
+    <button class="btn btn--solid btn--block" type="submit">Open Studio</button>
+    <p class="lockCard__err" id="lockErr" hidden>That's not it. Try again.</p>
+  </form>
+</div>
+
+<!-- Studio -->
+<div id="studio" hidden>
+  <header class="topbar is-stuck">
+    <div class="shell topbar__inner">
+      <a class="wordmark" href="index.html">
+        <span class="wordmark__dot" aria-hidden="true"></span>
+        <span class="wordmark__text">MOVIE<span class="wordmark__accent">DROP</span></span>
+        <span class="tagChip">Studio</span>
+      </a>
+      <a class="topbar__ig" href="index.html">View site</a>
+    </div>
+  </header>
+
+  <main class="shell studio__main">
+    <section class="studio__intro">
+      <h1 class="studio__title">Poster picker</h1>
+      <p class="studio__lede">
+        Pick the right artwork, copy the link, paste it into the <strong>poster</strong>
+        column of your sheet. That column beats the automatic lookup every time.
+      </p>
+      <p class="studio__note" id="tmdbNote" hidden></p>
+    </section>
+
+    <!-- Search -->
+    <section class="panel">
+      <form class="searchRow" id="searchForm">
+        <input class="field" id="qInput" type="search" placeholder="Search a movie title…"
+               aria-label="Movie title" autocomplete="off" required>
+        <button class="btn btn--solid" type="submit">Search</button>
+      </form>
+      <p class="panel__hint" id="searchHint">Tip: open a film from your sheet below to search it in one tap.</p>
+    </section>
+
+    <section id="resultsWrap" hidden>
+      <div class="section__head">
+        <h2 class="section__title" id="resultsTitle">Results</h2>
+        <p class="section__note" id="resultsNote"></p>
+      </div>
+      <div class="posterGrid" id="results"></div>
+    </section>
+
+    <!-- Custom URL -->
+    <section class="panel">
+      <h2 class="panel__title">Or use your own image</h2>
+      <p class="panel__hint">Paste any direct image link to preview it before you commit.</p>
+      <form class="searchRow" id="customForm">
+        <input class="field" id="customInput" type="url" placeholder="https://…/poster.jpg"
+               aria-label="Custom image URL" required>
+        <button class="btn btn--ghost" type="submit">Preview</button>
+      </form>
+      <div class="customPreview" id="customPreview" hidden></div>
+    </section>
+
+    <!-- Sheet -->
+    <section>
+      <div class="section__head">
+        <h2 class="section__title">In your sheet</h2>
+        <p class="section__note" id="sheetNote">Loading…</p>
+      </div>
+      <div class="rowList" id="sheetRows"></div>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<svg aria-hidden="true" focusable="false" width="0" height="0" style="position:absolute">
+  <symbol id="i-copy" viewBox="0 0 24 24">
+    <rect x="9" y="9" width="11.5" height="11.5" rx="2.4" fill="none" stroke="currentColor" stroke-width="1.7"/>
+    <path d="M15 6.2A2.2 2.2 0 0 0 12.8 4H5.7A2.2 2.2 0 0 0 3.5 6.2v7.1A2.2 2.2 0 0 0 5.7 15.5"
+          fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="i-search" viewBox="0 0 24 24">
+    <circle cx="11" cy="11" r="6.6" fill="none" stroke="currentColor" stroke-width="1.8"/>
+    <path d="M16 16l4.2 4.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+  </symbol>
+</svg>
+
+<script src="assets/studio.js" defer></script>
+</body>
+</html>

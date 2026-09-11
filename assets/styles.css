@@ -744,3 +744,14 @@ a{ color:inherit; }
 @media (prefers-reduced-motion:reduce){
   .btn--solid.is-primed{ animation:none; }
 }
+
+/* Step two of the follow gate, before Instagram has been opened */
+.btn--solid:disabled{
+  background:var(--surface-2);
+  color:var(--ink-mute);
+  border-color:var(--line);
+  box-shadow:none;
+  cursor:not-allowed;
+  animation:none;
+}
+.btn--solid:disabled:active{ transform:none; }

@@ -16,6 +16,7 @@
   var INSTAGRAM = 'https://www.instagram.com/by_.meghana/';
 
   var LS_UNLOCK  = 'moviedrop.unlocked.v1';
+  var LS_VISITED = 'moviedrop.visited.v1';
   var LS_POSTERS = 'moviedrop.posters.v2';
   var POSTER_TTL = 1000 * 60 * 60 * 24 * 14; // re-check posters fortnightly
 
@@ -50,6 +51,7 @@
     followBtn:   $('followBtn'),
     unlockBtn:   $('unlockBtn'),
     toast:       $('toast'),
+    gateStep:    $('gateStep'),
     topbar:      $('topbar')
   };
 
@@ -61,6 +63,7 @@
 
   // ── State ───────────────────────────────────────────────────────────────
   var unlocked = store.get(LS_UNLOCK) === 'yes';
+  var visitedIg = store.get(LS_VISITED) === 'yes';
   var movies = [];
 
   /* ========================================================================
@@ -715,6 +718,46 @@
     el.gate.setAttribute('data-state', unlocked ? 'unlocked' : 'locked');
     el.gateLocked.hidden = unlocked;
     el.gateUnlocked.hidden = !unlocked;
+    paintUnlockBtn();
+  }
+
+  // Step two of the gate stays inert until step one has happened.
+  function paintUnlockBtn() {
+    var ready = visitedIg;
+    el.unlockBtn.disabled = !ready;
+    el.unlockBtn.setAttribute('aria-disabled', String(!ready));
+    el.unlockBtn.classList.toggle('is-primed', ready);
+    el.unlockBtn.innerHTML = ready
+      ? '<svg aria-hidden="true"><use href="#i-unlock"/></svg>I&rsquo;ve Followed &mdash; Unlock Movies'
+      : '<svg aria-hidden="true"><use href="#i-lock"/></svg>Follow first to unlock';
+    el.gateStep.textContent = ready
+      ? 'Back from Instagram? Tap to unlock.'
+      : 'Step 1 — follow. Step 2 unlocks right after.';
+  }
+
+  var awaitingReturn = false;
+  var returnTimer = null;
+
+  function markVisited() {
+    if (visitedIg) return;
+    visitedIg = true;
+    awaitingReturn = false;
+    clearTimeout(returnTimer);
+    store.set(LS_VISITED, 'yes');
+    paintUnlockBtn();
+  }
+
+  function onFollowClick() {
+    awaitingReturn = true;
+    // Some in-app browsers (Instagram's own included) never fire a visibility
+    // change for an outbound link, so a short timer makes sure nobody ends up
+    // stuck behind a button that will not enable.
+    clearTimeout(returnTimer);
+    returnTimer = setTimeout(markVisited, 4000);
+  }
+
+  function onReturn() {
+    if (awaitingReturn && document.visibilityState === 'visible') markVisited();
   }
 
   function toast(msg) {
@@ -729,7 +772,7 @@
   }
 
   function unlockAll() {
-    if (unlocked) return;
+    if (unlocked || !visitedIg) return;
     unlocked = true;
     store.set(LS_UNLOCK, 'yes');
     paintGate();
@@ -781,13 +824,16 @@
 
   paintGate();
 
-  el.unlockBtn.addEventListener('click', unlockAll);
+  el.unlockBtn.addEventListener('click', function () {
+    if (!visitedIg) return;          // belt and braces alongside the disabled attribute
+    unlockAll();
+  });
   el.retryBtn.addEventListener('click', start);
 
-  // Nudge attention to the confirm button once Instagram has been opened.
-  el.followBtn.addEventListener('click', function () {
-    setTimeout(function () { el.unlockBtn.classList.add('is-primed'); }, 600);
-  });
+  el.followBtn.addEventListener('click', onFollowClick);
+  document.addEventListener('visibilitychange', onReturn);
+  window.addEventListener('focus', onReturn);
+  window.addEventListener('pageshow', onReturn);
 
   // Give the sticky bar a hairline once the page has moved.
   var ticking = false;

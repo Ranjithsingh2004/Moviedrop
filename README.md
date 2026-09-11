@@ -41,7 +41,8 @@ titles like *Blade Runner 2049* and *1917* stay intact.
 ### Forcing a specific poster
 
 Add a **poster** column with a direct image URL. It overrides everything else.
-Only needed when automatic lookup can't find the film.
+
+Finding that URL is what `/studio.html` is for — see **Studio** below.
 
 ---
 
@@ -71,6 +72,58 @@ Nothing else changes; the code picks it up automatically.
 
 ---
 
+## Studio
+
+`/studio.html` is an owner-only poster picker. Search a title, see every
+candidate with its year, tap the right one, and the image link is copied ready
+to paste into the sheet's **poster** column. It also lists the films already in
+your sheet and shows, per row, exactly what the live site will display —
+a real poster, or a generated one.
+
+Default passphrase: **`meghana-drop-2026`**
+
+To change it, hash your new phrase and replace `PASS_HASH` at the top of
+`assets/studio.js`. Run this in any browser console:
+
+```js
+crypto.subtle.digest('SHA-256', new TextEncoder().encode('your new phrase'))
+  .then(b => console.log([...new Uint8Array(b)]
+    .map(x => x.toString(16).padStart(2, '0')).join('')));
+```
+
+The passphrase runs in the browser, so anyone who reads the page source can get
+past it. It keeps casual visitors out; it is not a security boundary. That is
+fine here because the page only searches public poster catalogues and copies
+links — it cannot change your sheet or the site. Don't put anything secret
+behind it. The page is also marked `noindex`.
+
+---
+
+## The follow gate
+
+The gate runs in two steps, and step two stays disabled until step one has
+actually happened:
+
+1. **Follow @by_.meghana** — opens Instagram in a new tab.
+2. **I've Followed — Unlock Movies** — inert until the visitor has been sent to
+   Instagram, then enabled when they come back.
+
+"Came back" is detected by the page becoming visible again. Some in-app
+browsers never fire that event, so a 4-second timer after the tap enables the
+button regardless — better a determined faker gets through than a real follower
+gets stranded behind a dead button.
+
+This raises the cost of skipping the follow. It does not verify one, and the
+site never claims it does. Real verification is not possible from a web page:
+Meta's only follow-status field, `is_user_follow_business`, requires the person
+to have messaged your account first, so it is reachable from DM automation
+(ManyChat and similar) and nowhere else.
+
+Unlock state and gate progress are kept in `localStorage`, behind `try/catch`
+so private mode and in-app browsers degrade quietly.
+
+---
+
 ## Deploying
 
 Import the repo at [vercel.com](https://vercel.com/) and deploy. No framework,
@@ -94,17 +147,15 @@ fine — posters fall back exactly as they would on a static host.
 ## Files
 
 ```
-index.html          markup
+index.html          the public page
+studio.html         owner-only poster picker
 assets/styles.css   theme, layout, components
 assets/app.js       sheet loading, poster logic, follow gate
-api/poster.js       poster resolver (Vercel serverless function)
+assets/studio.css   studio styles
+assets/studio.js    studio logic
+api/poster.js       poster resolver + candidate search (Vercel function)
 favicon.svg         brand mark
 og-image.png        link preview card
 vercel.json         caching + security headers
 ```
 
-## The follow gate
-
-"I've Followed" simply unlocks the page — there is no Instagram verification,
-and the site never claims otherwise. The unlocked state is kept in
-`localStorage`, so it survives refreshes on that device.

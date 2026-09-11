@@ -132,6 +132,41 @@ async function fromIMDb(title, year) {
   };
 }
 
+/* ── Candidate listing (studio page) ───────────────────────────────────── */
+// Unlike the single-poster path this deliberately does NOT filter to exact
+// matches — a human is choosing, so show them everything and let them pick.
+async function listCandidates(title, key) {
+  const out = [];
+
+  if (key) {
+    const qs = new URLSearchParams({ api_key: key, query: title, include_adult: 'false' });
+    const data = await getJSON('https://api.themoviedb.org/3/search/movie?' + qs);
+    for (const r of ((data && data.results) || []).slice(0, 18)) {
+      if (!r.poster_path) continue;
+      out.push({
+        url: 'https://image.tmdb.org/t/p/w500' + r.poster_path,
+        title: r.title,
+        year: (r.release_date || '').slice(0, 4) || null,
+        extra: r.original_title && r.original_title !== r.title ? r.original_title : '',
+        source: 'tmdb',
+      });
+    }
+  }
+
+  if (out.length < 6) {
+    const slug = encodeURIComponent(title.trim().toLowerCase());
+    const data = await getJSON(`https://v3.sg.media-imdb.com/suggestion/titles/x/${slug}.json?includeVideos=0`);
+    for (const r of ((data && data.d) || [])) {
+      if (!r.i || !r.i.imageUrl) continue;
+      const url = imdbSize(r.i.imageUrl);
+      if (out.some((o) => o.url === url)) continue;
+      out.push({ url, title: r.l, year: r.y || null, extra: r.s || '', source: 'imdb' });
+    }
+  }
+
+  return out;
+}
+
 /* ── Handler ───────────────────────────────────────────────────────────── */
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -148,9 +183,18 @@ export default async function handler(req, res) {
     return res.status(400).json({ url: null, error: 'title required' });
   }
 
+  const key = process.env.TMDB_API_KEY;
+
+  // Studio mode: return every candidate so a person can choose.
+  if (String((req.query && req.query.list) || '') === '1') {
+    let results = [];
+    try { results = await listCandidates(title, key); } catch { results = []; }
+    res.setHeader('Cache-Control', 'public, max-age=300, s-maxage=3600');
+    return res.status(200).json({ results, tmdb: Boolean(key) });
+  }
+
   let hit = null;
   try {
-    const key = process.env.TMDB_API_KEY;
     if (key) hit = await fromTMDB(title, year, key);
     if (!hit) hit = await fromIMDb(title, year);
   } catch {
