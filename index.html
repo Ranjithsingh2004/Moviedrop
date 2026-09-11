@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MovieDrop — Your next movie is waiting.</title>
+<meta name="description" content="A hand-picked drop of movies and where to watch them. Follow @by_.meghana on Instagram to unlock every link.">
+<meta name="theme-color" content="#08080B">
+<meta name="color-scheme" content="dark">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MovieDrop">
+<meta property="og:title" content="MovieDrop — Your next movie is waiting.">
+<meta property="og:description" content="A hand-picked drop of movies and where to watch them. Follow @by_.meghana to unlock every link.">
+<meta property="og:image" content="og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="MovieDrop — Your next movie is waiting.">
+<meta name="twitter:description" content="A hand-picked drop of movies and where to watch them.">
+<meta name="twitter:image" content="og-image.png">
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="favicon.svg">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://docs.google.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+
+<a class="skip-link" href="#drops">Skip to the movies</a>
+
+<header class="topbar" id="topbar">
+  <div class="shell topbar__inner">
+    <a class="wordmark" href="#top" aria-label="MovieDrop home">
+      <span class="wordmark__dot" aria-hidden="true"></span>
+      <span class="wordmark__text">MOVIE<span class="wordmark__accent">DROP</span></span>
+    </a>
+    <a class="topbar__ig" href="https://www.instagram.com/by_.meghana/" target="_blank" rel="noopener noreferrer">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-instagram"/></svg>
+      <span>@by_.meghana</span>
+    </a>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ───────────────── HERO ───────────────── -->
+  <section class="hero">
+    <div class="hero__stage" aria-hidden="true">
+      <div class="hero__beam hero__beam--a"></div>
+      <div class="hero__beam hero__beam--b"></div>
+      <div class="hero__glow"></div>
+      <div class="hero__orb hero__orb--1"></div>
+      <div class="hero__orb hero__orb--2"></div>
+      <div class="hero__reel"></div>
+      <div class="grain"></div>
+    </div>
+
+    <div class="shell hero__inner">
+      <p class="eyebrow">
+        <span class="eyebrow__pulse" aria-hidden="true"></span>
+        This week&rsquo;s drop &middot; curated by <span class="eyebrow__handle">@by_.meghana</span>
+      </p>
+
+      <h1 class="hero__title">
+        Your next movie<br><em>is waiting.</em>
+      </h1>
+
+      <p class="hero__sub">
+        A small, hand-picked list &mdash; and exactly where to watch each one.
+        No scrolling for an hour. Just press play.
+      </p>
+
+      <div class="hero__actions">
+        <a class="btn btn--ghost" href="#drops">
+          See the drop
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-arrow-down"/></svg>
+        </a>
+        <span class="hero__count" id="heroCount" hidden></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────────────── FOLLOW GATE ───────────────── -->
+  <section class="shell" aria-labelledby="gateTitle">
+    <div class="gate" id="gate" data-state="locked">
+
+      <!-- Locked view -->
+      <div class="gate__locked" id="gateLocked">
+        <div class="gate__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><use href="#i-lock"/></svg>
+        </div>
+        <h2 class="gate__title" id="gateTitle">Unlock the MovieDrop</h2>
+        <p class="gate__copy">
+          Follow <strong>@by_.meghana</strong> on Instagram to unlock every watch link below.
+          Takes five seconds &mdash; then it stays unlocked.
+        </p>
+        <div class="gate__actions">
+          <a class="btn btn--ig" id="followBtn"
+             href="https://www.instagram.com/by_.meghana/" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-instagram"/></svg>
+            Follow @by_.meghana
+          </a>
+          <button class="btn btn--solid" id="unlockBtn" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-unlock"/></svg>
+            I&rsquo;ve Followed &mdash; Unlock Movies
+          </button>
+        </div>
+        <p class="gate__foot">One tap unlocks all the links on this page.</p>
+      </div>
+
+      <!-- Unlocked view -->
+      <div class="gate__unlocked" id="gateUnlocked" hidden>
+        <div class="gate__check" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><use href="#i-check"/></svg>
+        </div>
+        <div class="gate__unlockedText">
+          <h2 class="gate__title gate__title--sm">You&rsquo;re in.</h2>
+          <p class="gate__copy gate__copy--sm">Every link below is unlocked. Enjoy the drop.</p>
+        </div>
+        <a class="btn btn--quiet" href="https://www.instagram.com/by_.meghana/" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-instagram"/></svg>
+          More on Instagram
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ───────────────── DROPS ───────────────── -->
+  <section class="shell section" id="drops" aria-labelledby="dropsTitle">
+    <div class="section__head">
+      <h2 class="section__title" id="dropsTitle">The Drop</h2>
+      <p class="section__note" id="sectionNote">Loading tonight&rsquo;s picks&hellip;</p>
+    </div>
+
+    <!-- Loading skeletons -->
+    <div class="grid" id="skeleton" aria-hidden="true">
+      <div class="skel"><div class="skel__poster"></div><div class="skel__line"></div><div class="skel__line skel__line--short"></div></div>
+      <div class="skel"><div class="skel__poster"></div><div class="skel__line"></div><div class="skel__line skel__line--short"></div></div>
+      <div class="skel"><div class="skel__poster"></div><div class="skel__line"></div><div class="skel__line skel__line--short"></div></div>
+      <div class="skel"><div class="skel__poster"></div><div class="skel__line"></div><div class="skel__line skel__line--short"></div></div>
+      <div class="skel"><div class="skel__poster"></div><div class="skel__line"></div><div class="skel__line skel__line--short"></div></div>
+      <div class="skel"><div class="skel__poster"></div><div class="skel__line"></div><div class="skel__line skel__line--short"></div></div>
+    </div>
+
+    <!-- Movie grid -->
+    <div class="grid" id="grid" hidden></div>
+
+    <!-- Empty / error -->
+    <div class="notice" id="notice" hidden>
+      <div class="notice__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-film"/></svg></div>
+      <h3 class="notice__title" id="noticeTitle">The drop is being restocked</h3>
+      <p class="notice__copy" id="noticeCopy">New picks are on the way. Check back in a moment.</p>
+      <button class="btn btn--ghost" id="retryBtn" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-refresh"/></svg>
+        Try again
+      </button>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="shell footer__inner">
+    <div class="footer__brand">
+      <span class="wordmark__dot" aria-hidden="true"></span>
+      <span class="wordmark__text">MOVIE<span class="wordmark__accent">DROP</span></span>
+    </div>
+    <p class="footer__copy">Curated movie drops. Links point to the official platforms.</p>
+    <a class="footer__ig" href="https://www.instagram.com/by_.meghana/" target="_blank" rel="noopener noreferrer">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-instagram"/></svg>
+      @by_.meghana
+    </a>
+  </div>
+</footer>
+
+<!-- Toast -->
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<!-- Icon sprite -->
+<svg class="sprite" aria-hidden="true" focusable="false" width="0" height="0" style="position:absolute">
+  <symbol id="i-instagram" viewBox="0 0 24 24">
+    <rect x="2.5" y="2.5" width="19" height="19" rx="5.5" fill="none" stroke="currentColor" stroke-width="1.7"/>
+    <circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.7"/>
+    <circle cx="17.4" cy="6.6" r="1.25" fill="currentColor"/>
+  </symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24">
+    <rect x="4.5" y="10.5" width="15" height="10" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.7"/>
+    <path d="M8 10.5V7.8a4 4 0 0 1 8 0v2.7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+    <circle cx="12" cy="15.4" r="1.4" fill="currentColor"/>
+  </symbol>
+  <symbol id="i-unlock" viewBox="0 0 24 24">
+    <rect x="4.5" y="10.5" width="15" height="10" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.7"/>
+    <path d="M8 10.5V7.8a4 4 0 0 1 7.6-1.7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+    <circle cx="12" cy="15.4" r="1.4" fill="currentColor"/>
+  </symbol>
+  <symbol id="i-check" viewBox="0 0 24 24">
+    <path d="M5 12.6l4.6 4.6L19 7.8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="i-play" viewBox="0 0 24 24">
+    <path d="M8.5 6.3l9 5.7-9 5.7z" fill="currentColor"/>
+  </symbol>
+  <symbol id="i-arrow-down" viewBox="0 0 24 24">
+    <path d="M12 5v13m0 0l-5.2-5.2M12 18l5.2-5.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="i-arrow-up-right" viewBox="0 0 24 24">
+    <path d="M7.5 16.5l9-9m0 0H9.4m7.1 0v7.1" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24">
+    <path d="M20 12a8 8 0 1 1-2.4-5.7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    <path d="M20 4.5V10h-5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="i-film" viewBox="0 0 24 24">
+    <rect x="3" y="4.5" width="18" height="15" rx="2.4" fill="none" stroke="currentColor" stroke-width="1.6"/>
+    <path d="M8 4.5v15M16 4.5v15M3 12h18M3 8.3h5M3 15.7h5M16 8.3h5M16 15.7h5" fill="none" stroke="currentColor" stroke-width="1.3"/>
+  </symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="8.3" fill="none" stroke="currentColor" stroke-width="1.7"/>
+    <path d="M12 7.4V12l3.1 1.9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+</svg>
+
+<script src="assets/app.js" defer></script>
+</body>
+</html>
