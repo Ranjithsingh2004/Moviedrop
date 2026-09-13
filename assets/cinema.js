@@ -40,11 +40,11 @@
       done = true;
       document.documentElement.style.overflow = '';
       node.classList.add('is-out');
-      setTimeout(function () { node.classList.add('is-gone'); }, 700);
-      setTimeout(function () { if (node.parentNode) node.remove(); }, 1100);
+      setTimeout(function () { node.classList.add('is-gone'); }, 480);
+      setTimeout(function () { if (node.parentNode) node.remove(); }, 760);
     }
 
-    setTimeout(finish, 1250);
+    setTimeout(finish, 1500);
     // Any deliberate input cuts the leader short.
     ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(function (ev) {
       window.addEventListener(ev, finish, { once: true, passive: true });
@@ -184,6 +184,53 @@
         c.style.setProperty('--ty', '0');
       });
     }, { passive: true });
+  })();
+
+  /* ── Sticky stack depth ────────────────────────────────────────────────
+     Each frame reports how far the next one has covered it, so the pile
+     recedes instead of simply overlapping. app.js calls the returned hook
+     once the frames exist.                                               */
+  (function stack() {
+    var frames = [];
+    var ticking = false;
+
+    function measure() {
+      ticking = false;
+      for (var i = 0; i < frames.length; i++) {
+        var f = frames[i];
+        var next = frames[i + 1];
+        if (!next) { f.style.setProperty('--cover', '0'); continue; }
+        var fr = f.getBoundingClientRect();
+        if (!fr.height) continue;
+        var nTop = next.getBoundingClientRect().top;
+        var cover = (fr.bottom - nTop) / fr.height;
+        cover = cover < 0 ? 0 : cover > 1 ? 1 : cover;
+        f.style.setProperty('--cover', cover.toFixed(3));
+      }
+    }
+
+    function schedule() {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(measure);
+    }
+
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule, { passive: true });
+
+    function collect() {
+      if (reduced) return;                 // flattened to a plain list in CSS
+      var track = $('marqueeTrack');
+      frames = track ? [].slice.call(track.querySelectorAll('.frame__inner')) : [];
+      schedule();
+    }
+
+    window.MovieDropStack = collect;
+
+    // The frames arrive with the sheet, which may land before or after this
+    // file runs — so watch for them rather than relying on call order.
+    var track = $('marqueeTrack');
+    if (track) new MutationObserver(collect).observe(track, { childList: true });
   })();
 
   /* ── Counting a number up ──────────────────────────────────────────────

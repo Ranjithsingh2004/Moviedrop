@@ -99,6 +99,14 @@ behind it. The page is also marked `noindex`.
 
 ---
 
+## Now Showing
+
+The first few films from the sheet also appear above the archive as a sticky
+stack — each one holds the frame while the next rises over it, so the reel
+builds into a pile of 35mm frames. It needs at least two films; below that the
+archive grid carries the reel on its own. The archive below always lists
+everything, so browsing stays one screen of scrolling rather than one per film.
+
 ## The follow gate
 
 The gate runs in two steps, and step two stays disabled until step one has

@@ -180,51 +180,112 @@ body > main, body > header, body > footer{ position:relative; z-index:1; }
 body.is-open .rail--right .rail__text{ color:var(--velvet-hi); }
 @media (min-width:1180px){ .rail{ display:grid; } }
 
-/* ══ PROJECTOR LEADER ═════════════════════════════════════════════════════ */
+/* ══ PROJECTOR LEADER ═════════════════════════════════════════════════════
+   The lamp strikes, throws a cone, settles, then the shutters open. Removed
+   from the DOM by cinema.js, so it can never sit over the page.             */
 .leader{
   position:fixed; inset:0; z-index:200;
-  background:var(--ink-0);
+  background:#050304;
   display:grid; place-items:center;
-  color:var(--light);
+  overflow:hidden;
 }
-.leader__shutter{
-  position:absolute; left:0; right:0; height:50%;
-  background:#040203;
-  transform:translate3d(0,0,0);
-  transition:transform 720ms var(--ease-film);
+
+/* The lamp itself, just above the frame. */
+.leader__lamp{
+  position:absolute; left:50%; top:-6%;
+  width:min(300px,52vw); aspect-ratio:1;
+  transform:translateX(-50%);
+  background:radial-gradient(circle at 50% 50%,
+    rgba(255,246,228,.95) 0%, rgba(255,232,190,.5) 18%,
+    rgba(233,180,85,.18) 38%, transparent 66%);
+  opacity:0;
+  animation:lampStrike 1400ms steps(1,end) forwards;
 }
-.leader__shutter--top{ top:0; }
-.leader__shutter--btm{ bottom:0; }
+
+/* The beam. A cone, widening as it falls. */
+.leader__cone{
+  position:absolute; left:50%; top:-14%;
+  width:min(1500px,175vw); height:150%;
+  transform:translateX(-50%);
+  background:
+    radial-gradient(ellipse 42% 62% at 50% 0%,
+      rgba(255,244,224,.34) 0%,
+      rgba(255,236,206,.17) 26%,
+      rgba(233,180,85,.075) 48%,
+      transparent 74%);
+  -webkit-mask-image:linear-gradient(to bottom, #000 0%, #000 58%, transparent 96%);
+  mask-image:linear-gradient(to bottom, #000 0%, #000 58%, transparent 96%);
+  opacity:0;
+  animation:coneStrike 1400ms steps(1,end) forwards;
+}
+
+/* Dust drifting in the beam. */
+.leader__dust{
+  position:absolute; inset:-30%;
+  opacity:0;
+  mix-blend-mode:screen;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='3'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+  animation:dustIn 1400ms ease-out forwards, grainDrift 620ms steps(2,end) infinite;
+}
+
+/* Three hard frames — a lamp does not fade in, it catches. */
+@keyframes lampStrike{
+  0%   { opacity:0; }
+  12%  { opacity:1; }        /* catch */
+  20%  { opacity:.12; }      /* drop  */
+  30%  { opacity:.92; }      /* catch */
+  38%  { opacity:.3; }       /* drop  */
+  46%  { opacity:1; }        /* hold  */
+  100% { opacity:1; }
+}
+@keyframes coneStrike{
+  0%   { opacity:0; transform:translateX(-50%) scaleY(.82); }
+  12%  { opacity:1; transform:translateX(-50%) scaleY(1); }
+  20%  { opacity:.15; transform:translateX(-50%) scaleY(.94); }
+  30%  { opacity:.9;  transform:translateX(-50%) scaleY(1.01); }
+  38%  { opacity:.34; transform:translateX(-50%) scaleY(.97); }
+  46%  { opacity:1;   transform:translateX(-50%) scaleY(1); }
+  100% { opacity:1;   transform:translateX(-50%) scaleY(1); }
+}
+@keyframes dustIn{
+  0%,36% { opacity:0; }
+  100%   { opacity:.12; }
+}
 
 .leader__core{
   position:relative;
-  display:grid; place-items:center;
-  transition:opacity 340ms var(--ease), transform 340ms var(--ease);
+  display:grid; place-items:center; gap:14px;
+  text-align:center;
+  transition:opacity 320ms var(--ease), transform 420ms var(--ease-film);
 }
-.leader__reticle{ width:clamp(140px,34vw,190px); aspect-ratio:1; color:var(--light-2); }
-.leader__sweep{
-  stroke-dasharray:478;
-  stroke-dashoffset:478;
-  transform-origin:50% 50%;
-  transform:rotate(-90deg);
-  animation:sweep 1000ms var(--ease-film) forwards;
-}
-@keyframes sweep{ to{ stroke-dashoffset:0; } }
-
 .leader__mark{
-  position:absolute;
-  font-family:var(--mono); font-size:11px;
-  letter-spacing:.62em; text-indent:.62em;
-  color:var(--light-2);
+  font-family:var(--mono); font-size:clamp(11px,3vw,13px);
+  letter-spacing:.66em; text-indent:.66em;
+  color:var(--light);
   opacity:0;
-  animation:markIn 620ms var(--ease) 260ms forwards;
+  animation:markIn 520ms var(--ease) 620ms forwards;
+}
+.leader__sub{
+  font-family:var(--mono); font-size:9.5px;
+  letter-spacing:.42em; text-indent:.42em;
+  color:var(--light-4);
+  opacity:0;
+  animation:markIn 520ms var(--ease) 800ms forwards;
 }
 @keyframes markIn{ to{ opacity:1; } }
 
+/* On the way out the lamp flares and the whole frame washes through. */
+.leader{
+  transition:opacity 460ms var(--ease-film);
+}
+.leader__lamp,.leader__cone{
+  transition:transform 520ms var(--ease-film), opacity 460ms var(--ease);
+}
+.leader.is-out{ opacity:0; pointer-events:none; }
 .leader.is-out .leader__core{ opacity:0; transform:scale(1.06); }
-.leader.is-out .leader__shutter--top{ transform:translate3d(0,-100%,0); }
-.leader.is-out .leader__shutter--btm{ transform:translate3d(0,100%,0); }
-.leader.is-gone{ opacity:0; pointer-events:none; transition:opacity 260ms linear; }
+.leader.is-out .leader__lamp{ transform:translateX(-50%) scale(1.7); }
+.leader.is-out .leader__cone{ transform:translateX(-50%) scale(1.25); }
+.leader.is-gone{ opacity:0; pointer-events:none; }
 
 /* ══ TYPE PRIMITIVES ══════════════════════════════════════════════════════ */
 
@@ -787,13 +848,13 @@ body.is-open .rail--right .rail__text{ color:var(--velvet-hi); }
 }
 .poster__band svg{ width:11px; height:11px; flex:none; }
 
-.card.is-unlocked .poster__locked{
+.is-unlocked .poster__locked{
   opacity:0; pointer-events:none;
   backdrop-filter:blur(0) saturate(100%);
   -webkit-backdrop-filter:blur(0) saturate(100%);
 }
 /* The band splits like a shutter as the screening opens. */
-.card.is-unlocked .poster__band{
+.is-unlocked .poster__band{
   transform:scaleY(0);
   transition:transform .55s var(--ease-film);
 }
@@ -848,17 +909,17 @@ body.is-open .rail--right .rail__text{ color:var(--velvet-hi); }
 }
 .card__cta svg{ width:12px; height:12px; flex:none; }
 
-.card.is-unlocked .card__cta[href]{
+.is-unlocked .card__cta[href]{
   color:var(--light);
   border-color:var(--rule-2);
   cursor:pointer;
 }
-.card.is-unlocked .card__cta[href]:hover{
+.is-unlocked .card__cta[href]:hover{
   background:var(--velvet);
   border-color:var(--velvet);
   color:var(--light);
 }
-.card.is-unlocked .card__cta[href]:active{ transform:scale(.985); }
+.is-unlocked .card__cta[href]:active{ transform:scale(.985); }
 
 /* ══ SKELETON ═════════════════════════════════════════════════════════════ */
 .skel{ min-width:0; }
@@ -1067,7 +1128,7 @@ a.credits__name:hover{ color:var(--velvet-hi); }
 }
 
 /* Watch CTA: perforations run across it on hover. */
-.card.is-unlocked .card__cta[href]::before{
+.is-unlocked .card__cta[href]::before{
   content:"";
   position:absolute; inset:0;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='42'%3E%3Crect x='9' y='17' width='8' height='8' rx='1.6' fill='%23f4ece1' fill-opacity='.5'/%3E%3C/svg%3E");
@@ -1078,7 +1139,7 @@ a.credits__name:hover{ color:var(--velvet-hi); }
   transition:opacity .3s var(--ease), transform .9s var(--ease-film);
   pointer-events:none;
 }
-.card.is-unlocked .card__cta[href]:hover::before{
+.is-unlocked .card__cta[href]:hover::before{
   opacity:.5;
   transform:translate3d(30%,0,0);
 }
@@ -1094,6 +1155,136 @@ a.credits__name:hover{ color:var(--velvet-hi); }
   .cinema-ready .slate__title span{ opacity:1 !important; clip-path:none !important; transform:none !important; }
   .grid.is-advancing{ animation:none; }
   .rail__text.is-changing{ animation:none; }
-  .card.is-unlocked .card__cta[href]::before{ display:none; }
+  .is-unlocked .card__cta[href]::before{ display:none; }
   .card:hover .poster__frame{ transform:none; }
+}
+
+/* ══ NOW SHOWING — sticky stack ═══════════════════════════════════════════
+   Each film sticks as the next rises over it, so the reel builds into a
+   pile of frames. Capped to a handful: the archive grid below stays the
+   place you actually browse.                                              */
+.marquee{ padding-block:clamp(40px,7vw,72px) 0; }
+
+.marquee__track{
+  position:relative;
+  padding-top:clamp(20px,4vw,36px);
+  padding-bottom:clamp(48px,9vw,96px);
+}
+
+.frame{
+  position:sticky;
+  /* Staggered so the edge of every covered frame stays visible. */
+  top:calc(clamp(58px,9vh,92px) + var(--i,0) * 13px);
+  height:clamp(430px,70vh,640px);
+  margin-bottom:clamp(22px,4vw,40px);
+}
+.frame:last-child{ margin-bottom:0; }
+
+.frame__inner{
+  position:relative;
+  height:100%;
+  display:flex; align-items:stretch; gap:clamp(18px,3.4vw,44px);
+  padding:clamp(16px,2.6vw,26px);
+  border:1px solid var(--rule-2);
+  background:linear-gradient(160deg, var(--ink-2), var(--ink-0) 72%);
+  overflow:hidden;
+  /* cinema.js sets --cover 0→1 as the next frame rises over this one. */
+  transform:scale(calc(1 - var(--cover,0) * .06));
+  transform-origin:50% 22%;
+  box-shadow:0 -18px 44px -26px rgba(0,0,0,.9);
+  transition:transform .1s linear;
+}
+
+/* Sprocket strips down both edges: this panel is one 35mm frame. */
+.frame__inner::before,
+.frame__inner::after{
+  content:"";
+  position:absolute; top:0; bottom:0; width:16px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='32'%3E%3Crect x='3.5' y='7' width='9' height='18' rx='2.4' fill='%23f4ece1' fill-opacity='.08'/%3E%3C/svg%3E");
+  background-repeat:repeat-y;
+  background-position:50% 0;
+  pointer-events:none;
+}
+.frame__inner::before{ left:0; }
+.frame__inner::after{ right:0; }
+
+/* The covered frames darken rather than being filtered — cheaper to paint. */
+.frame__dim{
+  position:absolute; inset:0; z-index:6;
+  background:rgba(5,3,4,.82);
+  opacity:calc(var(--cover,0) * .9);
+  pointer-events:none;
+}
+
+.frame__poster{
+  flex:0 0 auto;
+  align-self:stretch;
+  display:flex; align-items:center;
+}
+.frame__poster .poster{
+  height:100%; width:auto;
+  aspect-ratio:2/3;
+}
+
+.frame__body{
+  flex:1 1 auto; min-width:0; max-width:min(660px,100%);
+  display:flex; flex-direction:column; justify-content:center;
+  gap:clamp(10px,1.6vw,16px);
+  padding-right:clamp(10px,2vw,22px);
+}
+.frame__no{ color:var(--light-4); }
+.frame__title{
+  margin:0;
+  font-family:var(--display);
+  font-size:clamp(30px,5.2vw,64px);
+  font-weight:400; line-height:.92;
+  letter-spacing:.004em; text-transform:uppercase;
+  text-wrap:balance;
+}
+.frame__meta{
+  margin:0;
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  font-family:var(--mono); font-size:clamp(9.5px,2.2vw,11px);
+  letter-spacing:.18em; text-transform:uppercase;
+  color:var(--light-2);
+}
+.frame__meta i{ width:12px; height:1px; background:var(--rule-2); flex:none; }
+.frame__meta .dot{
+  width:5px; height:5px; flex:none;
+  background:var(--ott,var(--velvet-hi));
+  box-shadow:0 0 8px var(--ott,var(--velvet-hi));
+}
+.frame__actions{ margin-top:clamp(6px,1.2vw,12px); }
+.frame__actions .btn{
+  width:auto;
+  min-width:min(258px,100%);
+  max-width:340px;
+  min-height:52px;
+  font-size:11px;
+}
+
+/* Locked frames read the same as locked cards. */
+.frame .poster__locked{ z-index:7; }
+
+@media (max-width:720px){
+  .frame{ height:clamp(410px,68vh,600px); top:calc(52px + var(--i,0) * 10px); }
+  .frame__inner{ flex-direction:column; gap:16px; padding:clamp(14px,4vw,20px); }
+  .frame__inner::before,.frame__inner::after{ width:11px; }
+  .frame__poster{
+    width:auto;
+    flex:1 1 auto; min-height:0;
+    align-self:stretch;
+    display:flex; justify-content:center;
+  }
+  .frame__poster .poster{ height:100%; width:auto; aspect-ratio:2/3; }
+  .frame__body{ flex:0 0 auto; padding-right:0; gap:8px; }
+  .frame__actions .btn{ width:100%; }
+}
+
+/* Sticky stacking is disorienting when motion is reduced — flatten it. */
+@media (prefers-reduced-motion:reduce){
+  .frame{ position:static; height:auto; }
+  .frame__inner{ transform:none; height:auto; }
+  .frame__dim{ display:none; }
+  .leader__lamp,.leader__cone,.leader__dust{ animation:none; opacity:1; }
 }

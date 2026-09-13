@@ -53,6 +53,9 @@
     toast:       $('toast'),
     gateStep:    $('gateStep'),
     flash:       $('flash'),
+    marquee:     $('marquee'),
+    marqueeTrack:$('marqueeTrack'),
+    marqueeNote: $('marqueeNote'),
     railStatus:  $('railStatus'),
     topbar:      $('topbar')
   };
@@ -638,27 +641,22 @@
   /* ========================================================================
      Rendering
      ===================================================================== */
-  function buildCard(movie, i) {
-    var card = document.createElement('article');
-    card.className = 'card' + (unlocked ? ' is-unlocked' : '');
-    card.style.setProperty('--d', Math.min(i, 11) * 65 + 'ms');
-
-    var no = String(i + 1).padStart(3, '0');
-
-    var cta;
+  // Shared by the grid cards and the Now Showing frames.
+  function ctaFor(movie, cls) {
     if (!movie.link) {
-      cta = '<span class="card__cta card__cta--soon">' +
-              '<svg aria-hidden="true"><use href="#i-clock"/></svg>Coming soon</span>';
-    } else if (unlocked) {
-      cta = '<a class="card__cta" href="' + esc(movie.link) + '" target="_blank" rel="noopener noreferrer" ' +
-              'aria-label="Watch ' + esc(movie.title) + ' on ' + esc(movie.ott.label) + '">' +
-              '<svg aria-hidden="true"><use href="#i-play"/></svg>Watch</a>';
-    } else {
-      cta = '<a class="card__cta"><svg aria-hidden="true"><use href="#i-lock"/></svg>Locked</a>';
+      return '<span class="' + cls + ' card__cta--soon">' +
+        '<svg aria-hidden="true"><use href="#i-clock"/></svg>Coming soon</span>';
     }
+    if (unlocked) {
+      return '<a class="' + cls + '" href="' + esc(movie.link) + '" target="_blank" rel="noopener noreferrer" ' +
+        'aria-label="Watch ' + esc(movie.title) + ' on ' + esc(movie.ott.label) + '">' +
+        '<svg aria-hidden="true"><use href="#i-play"/></svg>Watch</a>';
+    }
+    return '<a class="' + cls + '"><svg aria-hidden="true"><use href="#i-lock"/></svg>Locked</a>';
+  }
 
-    card.innerHTML =
-      '<div class="poster">' +
+  function posterMarkup(movie, i) {
+    return '<div class="poster">' +
         '<div class="poster__frame">' +
           '<div class="poster__art">' + buildPoster(movie.raw || movie.title, i) + '</div>' +
         '</div>' +
@@ -666,19 +664,52 @@
         '<div class="poster__glow" aria-hidden="true"></div>' +
         '<div class="poster__sheen" aria-hidden="true"></div>' +
         '<div class="poster__marks" aria-hidden="true"><span></span><span></span><span></span><span></span></div>' +
-        '<span class="poster__no" aria-hidden="true">FILM ' + no + '</span>' +
+        '<span class="poster__no" aria-hidden="true">FILM ' + String(i + 1).padStart(3, '0') + '</span>' +
         '<span class="poster__tag" style="--ott:' + esc(movie.ott.color) + '">' + esc(movie.ott.label) + '</span>' +
         '<div class="poster__locked">' +
           '<p class="poster__band">' +
             '<svg aria-hidden="true"><use href="#i-lock"/></svg>Screening locked' +
           '</p>' +
         '</div>' +
-      '</div>' +
+      '</div>';
+  }
+
+  function buildFrame(movie, i) {
+    var frame = document.createElement('article');
+    frame.className = 'frame' + (unlocked ? ' is-unlocked' : '');
+    frame.style.setProperty('--i', i);
+
+    frame.innerHTML =
+      '<div class="frame__inner">' +
+        '<div class="frame__poster">' + posterMarkup(movie, i) + '</div>' +
+        '<div class="frame__body">' +
+          '<p class="slug frame__no">FILM ' + String(i + 1).padStart(3, '0') + '</p>' +
+          '<h3 class="frame__title">' + esc(movie.title) + '</h3>' +
+          '<p class="frame__meta">' +
+            '<span class="dot" style="--ott:' + esc(movie.ott.color) + '"></span>' +
+            esc(movie.ott.label) +
+            (movie.year ? '<i aria-hidden="true"></i>' + esc(movie.year) : '') +
+          '</p>' +
+          '<div class="frame__actions">' + ctaFor(movie, 'btn btn--solid card__cta') + '</div>' +
+        '</div>' +
+        '<div class="frame__dim" aria-hidden="true"></div>' +
+      '</div>';
+
+    return frame;
+  }
+
+  function buildCard(movie, i) {
+    var card = document.createElement('article');
+    card.className = 'card' + (unlocked ? ' is-unlocked' : '');
+    card.style.setProperty('--d', Math.min(i, 11) * 65 + 'ms');
+
+    card.innerHTML =
+      posterMarkup(movie, i) +
       '<div class="card__body">' +
         '<h3 class="card__title">' + esc(movie.title) + '</h3>' +
         '<p class="card__meta">' + esc(movie.ott.label) +
           (movie.year ? '<i aria-hidden="true"></i>' + esc(movie.year) : '') + '</p>' +
-        cta +
+        ctaFor(movie, 'card__cta') +
       '</div>';
 
     return card;
@@ -709,6 +740,30 @@
     el.grid.innerHTML = '';
     el.grid.appendChild(frag);
     el.grid.hidden = false;
+
+    // Now Showing: the first few films, stacked. Below two there is nothing
+    // to stack, so the archive grid carries the whole reel on its own.
+    var featured = list.slice(0, 4);
+    if (el.marquee && el.marqueeTrack) {
+      if (featured.length >= 2) {
+        var mfrag = document.createDocumentFragment();
+        featured.forEach(function (m, i) {
+          var fr = buildFrame(m, i);
+          mfrag.appendChild(fr);
+          pairs.push({ card: fr, movie: m });
+        });
+        el.marqueeTrack.innerHTML = '';
+        el.marqueeTrack.appendChild(mfrag);
+        el.marquee.hidden = false;
+        el.marqueeNote.textContent = featured.length === list.length
+          ? 'the full reel'
+          : 'first ' + featured.length + ' of ' + list.length;
+        if (window.MovieDropStack) window.MovieDropStack();
+      } else {
+        el.marquee.hidden = true;
+        el.marqueeTrack.innerHTML = '';
+      }
+    }
 
     var n = list.length;
     el.sectionNote.textContent = n + (n === 1 ? ' film, ' : ' films, ') +
@@ -831,21 +886,27 @@
     }
 
     // Re-point each locked CTA at its real destination.
-    var cards = el.grid.querySelectorAll('.card');
-    Array.prototype.forEach.call(cards, function (card, i) {
-      var movie = movies[i];
-      setTimeout(function () {
-        card.classList.add('is-unlocked');
-        var cta = card.querySelector('a.card__cta');
-        if (cta && movie && movie.link) {
-          cta.setAttribute('href', movie.link);
-          cta.setAttribute('target', '_blank');
-          cta.setAttribute('rel', 'noopener noreferrer');
-          cta.setAttribute('aria-label', 'Watch ' + movie.title + ' on ' + movie.ott.label);
-          cta.innerHTML = '<svg aria-hidden="true"><use href="#i-play"/></svg>Watch';
-        }
-      }, 180 + Math.min(i, 14) * 55);
+    function openOne(node, movie) {
+      node.classList.add('is-unlocked');
+      var cta = node.querySelector('a.card__cta');
+      if (cta && movie && movie.link) {
+        cta.setAttribute('href', movie.link);
+        cta.setAttribute('target', '_blank');
+        cta.setAttribute('rel', 'noopener noreferrer');
+        cta.setAttribute('aria-label', 'Watch ' + movie.title + ' on ' + movie.ott.label);
+        cta.innerHTML = '<svg aria-hidden="true"><use href="#i-play"/></svg>Watch';
+      }
+    }
+
+    Array.prototype.forEach.call(el.grid.querySelectorAll('.card'), function (card, i) {
+      setTimeout(function () { openOne(card, movies[i]); }, 180 + Math.min(i, 14) * 55);
     });
+
+    if (el.marqueeTrack) {
+      Array.prototype.forEach.call(el.marqueeTrack.querySelectorAll('.frame'), function (fr, i) {
+        setTimeout(function () { openOne(fr, movies[i]); }, 180 + i * 55);
+      });
+    }
 
     if (movies.length) {
       el.sectionNote.textContent = movies.length +

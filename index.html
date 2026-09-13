@@ -35,17 +35,12 @@
 
 <!-- ══ Projector leader. Removed by cinema.js; never blocks content. ══ -->
 <div class="leader" id="leader" aria-hidden="true" hidden>
-  <div class="leader__shutter leader__shutter--top"></div>
-  <div class="leader__shutter leader__shutter--btm"></div>
+  <div class="leader__lamp"></div>
+  <div class="leader__cone"></div>
+  <div class="leader__dust"></div>
   <div class="leader__core">
-    <svg class="leader__reticle" viewBox="0 0 200 200" aria-hidden="true">
-      <circle cx="100" cy="100" r="76" fill="none" stroke="currentColor" stroke-width=".7" opacity=".45"/>
-      <circle cx="100" cy="100" r="54" fill="none" stroke="currentColor" stroke-width=".7" opacity=".3"/>
-      <path d="M100 8v40M100 152v40M8 100h40M152 100h40" stroke="currentColor" stroke-width=".7" opacity=".45"/>
-      <circle class="leader__sweep" cx="100" cy="100" r="76" fill="none"
-              stroke="currentColor" stroke-width="1.6" opacity=".9"/>
-    </svg>
     <span class="leader__mark">MOVIEDROP</span>
+    <span class="leader__sub">REEL 01</span>
   </div>
 </div>
 
@@ -172,12 +167,26 @@
     </div>
   </section>
 
+  <!-- ═══════════════ NOW SHOWING (sticky stack) ═══════════════ -->
+  <section class="marquee" id="marquee" hidden aria-labelledby="marqueeTitle">
+    <div class="shell">
+      <div class="slate" data-reveal>
+        <div class="slate__left">
+          <h2 class="slate__title" id="marqueeTitle"><span>Now Showing</span></h2>
+        </div>
+        <p class="slug slug--right" id="marqueeNote"></p>
+      </div>
+      <div class="perf" aria-hidden="true"></div>
+    </div>
+    <div class="shell marquee__track" id="marqueeTrack"></div>
+  </section>
+
   <!-- ═══════════════ THE COLLECTION ═══════════════ -->
   <section class="shell collection" id="drops" aria-labelledby="dropsTitle">
 
     <div class="slate" data-reveal>
       <div class="slate__left">
-        <h2 class="slate__title" id="dropsTitle"><span>The Collection</span></h2>
+        <h2 class="slate__title" id="dropsTitle"><span>The Archive</span></h2>
       </div>
       <p class="slug slug--right" id="sectionNote">LOADING&hellip;</p>
     </div>
