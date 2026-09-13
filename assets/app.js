@@ -167,7 +167,7 @@
 
   function resolveOtt(raw) {
     var v = String(raw || '').trim();
-    if (!v) return { label: 'Watch now', color: '#e9b455' };
+    if (!v) return { label: '', color: '#c34a4f' };
     var hit = OTT[normKey(v)];
     return hit || { label: smartTitle(v), color: '#e9b455' };
   }
@@ -183,6 +183,23 @@
   function cleanYear(raw) {
     var m = String(raw || '').match(/(19\d{2}|20\d{2})/);
     return m ? m[1] : '';
+  }
+
+  // Poster URLs copied off a search page are often thumbnails. Most image
+  // CDNs carry the size in the URL, so ask the same host for a usable one.
+  function upscalePoster(url) {
+    if (!url) return url;
+    return url
+      // thumbor-style hosts (Flixster and friends): /68x102/ -> /600x900/
+      .replace(/\/(\d{2,4})x(\d{2,4})\//, function (m, w) {
+        return Number(w) >= 400 ? m : '/600x900/';
+      })
+      // TMDB: /t/p/w92/ -> /t/p/w500/
+      .replace(/\/t\/p\/w(\d{2,3})\//, function (m, w) {
+        return Number(w) >= 400 ? m : '/t/p/w500/';
+      })
+      // IMDb image CDN carries its render options in the filename.
+      .replace(/\._V1_.*?(\.\w+)$/, '._V1_QL75_UX500_$1');
   }
 
   // Accepts "https://…", "http://…" and bare "youtu.be/…".
@@ -254,7 +271,7 @@
         year:   year,
         ott:    resolveOtt(cell(idx.ott)),
         link:   cleanUrl(cell(idx.link)),
-        poster: cleanUrl(cell(idx.poster))
+        poster: upscalePoster(cleanUrl(cell(idx.poster)))
       });
     });
 
@@ -599,6 +616,8 @@
 
     img.onload = function () {
       if (!img.naturalWidth) return;           // zero-byte / corrupt response
+      // Too small to fill a poster without going soft — keep the drawn one.
+      if (img.naturalWidth < 240) return;
       var slot = card.querySelector('.poster__frame');
       if (!slot) return;
       img.className = 'poster__img';
@@ -650,7 +669,8 @@
     }
     if (unlocked) {
       return '<a class="' + cls + '" href="' + esc(movie.link) + '" target="_blank" rel="noopener noreferrer" ' +
-        'aria-label="Watch ' + esc(movie.title) + ' on ' + esc(movie.ott.label) + '">' +
+        'aria-label="Watch ' + esc(movie.title) +
+          (movie.ott.label ? ' on ' + esc(movie.ott.label) : '') + '">' +
         '<svg aria-hidden="true"><use href="#i-play"/></svg>Watch</a>';
     }
     return '<a class="' + cls + '"><svg aria-hidden="true"><use href="#i-lock"/></svg>Locked</a>';
@@ -667,7 +687,10 @@
         '<div class="poster__marks" aria-hidden="true"><span></span><span></span><span></span><span></span></div>' +
         '<div class="poster__head">' +
           '<span class="poster__no" aria-hidden="true">FILM ' + String(i + 1).padStart(3, '0') + '</span>' +
-          '<span class="poster__tag" style="--ott:' + esc(movie.ott.color) + '">' + esc(movie.ott.label) + '</span>' +
+          (movie.ott.label
+          ? '<span class="poster__tag" style="--ott:' + esc(movie.ott.color) + '">' +
+            esc(movie.ott.label) + '</span>'
+          : '') +
         '</div>' +
         '<div class="poster__locked">' +
           '<p class="poster__band">' +
@@ -687,7 +710,8 @@
       '<div class="card__body">' +
         '<h3 class="card__title">' + esc(movie.title) + '</h3>' +
         '<p class="card__meta">' + esc(movie.ott.label) +
-          (movie.year ? '<i aria-hidden="true"></i>' + esc(movie.year) : '') + '</p>' +
+          (movie.ott.label && movie.year ? '<i aria-hidden="true"></i>' : '') +
+          (movie.year ? esc(movie.year) : '') + '</p>' +
         ctaFor(movie, 'card__cta') +
       '</div>';
 
