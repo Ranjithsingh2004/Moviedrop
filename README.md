@@ -132,6 +132,41 @@ so private mode and in-app browsers degrade quietly.
 
 ---
 
+## Stats
+
+`/stats.html` is a passphrase-gated dashboard: visitors, how many tapped
+Follow, how many unlocked, which films get opened, day by day, plus every
+event in a table you can export as CSV.
+
+It records nothing until you set it up. No cookies, no third party, no
+cross-site identifiers — the session id is a random value that dies with the
+browser tab, and exists only so one visit isn't counted four times.
+
+### Setting it up (about two minutes)
+
+1. Create a **new, empty Google Sheet** — a private one, not the sheet with
+   your films. This is where events land.
+2. In it: **Extensions → Apps Script**. Delete whatever is there and paste
+   the contents of `apps-script.gs` from this repo.
+3. Change `PASSPHRASE` at the top to something only you and your sister know.
+4. **Deploy → New deployment → Web app**, with
+   *Execute as:* **Me** and *Who has access:* **Anyone**. Authorise it when
+   Google asks.
+5. Copy the `/exec` URL it gives you into `assets/config.js`:
+   `window.MOVIEDROP_STATS_URL = 'https://script.google.com/macros/s/…/exec';`
+6. Commit and push. Vercel redeploys, and the dashboard is at
+   `your-site.vercel.app/stats.html`.
+
+### Why it is built this way
+
+The events sheet stays **private**, and the Apps Script is the only way in.
+The passphrase is checked on Google's servers, not in the browser — so unlike
+`/studio.html`, reading the page source gets you nothing. That is also why the
+dashboard reads over JSONP: an Apps Script web app can't be relied on to send
+CORS headers.
+
+To change the passphrase later, edit it in the Apps Script and redeploy.
+
 ## Deploying
 
 Import the repo at [vercel.com](https://vercel.com/) and deploy. No framework,
@@ -160,6 +195,12 @@ studio.html         owner-only poster picker
 assets/styles.css   the visual system — tokens, layout, components
 assets/app.js       sheet loading, poster logic, follow gate
 assets/cinema.js    motion only — reveals, sticky bar, dock
+assets/config.js    the one place the stats backend URL goes
+assets/track.js     event beacon (inert until config.js is filled in)
+stats.html          passphrase-gated dashboard
+assets/stats.css    dashboard styles
+assets/stats.js     dashboard charts and JSONP reader
+apps-script.gs      paste this into Google Apps Script — see Stats
 assets/backdrop.webp    projection-booth plate (desktop)
 assets/backdrop-sm.webp same, for narrow screens
 assets/studio.css   studio styles

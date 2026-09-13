@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MovieDrop — Stats</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0a0708">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/styles.css">
+<link rel="stylesheet" href="assets/stats.css">
+</head>
+<body class="statsPage">
+
+<div class="lockScreen" id="lockScreen">
+  <form class="lockCard" id="lockForm">
+    <div class="wordmark">
+      <span class="wordmark__dot" aria-hidden="true"></span>
+      <span class="wordmark__text">MOVIE<span class="wordmark__accent">DROP</span></span>
+    </div>
+    <h1 class="lockCard__title">Stats</h1>
+    <p class="lockCard__copy">How many people land, follow, and open a film.</p>
+    <input class="field" id="passInput" type="password" autocomplete="current-password"
+           placeholder="Passphrase" aria-label="Passphrase" required>
+    <button class="btn btn--solid btn--block" type="submit">Open</button>
+    <p class="lockCard__err" id="lockErr" hidden></p>
+  </form>
+</div>
+
+<main id="dash" hidden>
+  <header class="statsBar">
+    <div class="shell statsBar__inner">
+      <a class="wordmark" href="index.html">
+        <span class="wordmark__dot" aria-hidden="true"></span>
+        <span class="wordmark__text">MOVIE<span class="wordmark__accent">DROP</span></span>
+        <span class="tagChip">Stats</span>
+      </a>
+      <div class="ranges" role="group" aria-label="Date range">
+        <button class="range" data-days="7" type="button">7 days</button>
+        <button class="range is-on" data-days="30" type="button">30 days</button>
+        <button class="range" data-days="365" type="button">All</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="shell statsBody">
+
+    <p class="slug" id="stamp"></p>
+
+    <!-- Headline numbers -->
+    <section class="tiles" id="tiles" aria-label="Headline numbers"></section>
+
+    <!-- Funnel -->
+    <section class="panel">
+      <h2 class="panel__h">The funnel</h2>
+      <p class="panel__sub">People, counted once each. The percentage is of the step above.</p>
+      <div id="funnel"></div>
+    </section>
+
+    <!-- Trend -->
+    <section class="panel">
+      <h2 class="panel__h">Day by day</h2>
+      <p class="panel__sub">Visitors and unlocks.</p>
+      <div id="trend"></div>
+    </section>
+
+    <div class="pair">
+      <section class="panel">
+        <h2 class="panel__h">Most opened films</h2>
+        <p class="panel__sub">Every tap counts, so one person can open several.</p>
+        <div id="films"></div>
+      </section>
+
+      <section class="panel">
+        <h2 class="panel__h">Where they come from</h2>
+        <p class="panel__sub">Visitors by browser and by referrer.</p>
+        <div id="split"></div>
+      </section>
+    </div>
+
+    <!-- Everything, in order -->
+    <section class="panel">
+      <div class="panel__head">
+        <div>
+          <h2 class="panel__h">Every event</h2>
+          <p class="panel__sub">Newest first, up to the last 120.</p>
+        </div>
+        <button class="btn btn--ghost btn--quiet" id="csvBtn" type="button">Download CSV</button>
+      </div>
+      <div class="tableWrap"><table class="tbl" id="log"></table></div>
+    </section>
+
+  </div>
+</main>
+
+<div class="statsNote" id="note" hidden></div>
+
+<script src="assets/config.js"></script>
+<script src="assets/stats.js" defer></script>
+</body>
+</html>
