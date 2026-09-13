@@ -159,7 +159,9 @@ index.html          the public page
 studio.html         owner-only poster picker
 assets/styles.css   the visual system — tokens, layout, components
 assets/app.js       sheet loading, poster logic, follow gate
-assets/cinema.js    motion only — projector leader, reveals, parallax
+assets/cinema.js    motion only — projector leader, reveals, stack, timecode
+assets/backdrop.webp    projection-booth plate (desktop)
+assets/backdrop-sm.webp same, for narrow screens
 assets/studio.css   studio styles
 assets/studio.js    studio logic
 api/poster.js       poster resolver + candidate search (Vercel function)

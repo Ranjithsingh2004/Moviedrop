@@ -85,21 +85,32 @@ a{ color:inherit; }
 /* ══ ATMOSPHERE ═══════════════════════════════════════════════════════════ */
 .ambient{ position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
 
-/* Backdrop plate. Off until --plate is set on :root, so no request is made
-   and nothing 404s while there is no image. To switch it on, drop the file in
-   and set:  :root{ --plate:url("assets/backdrop.webp"); }                    */
+/* Backdrop plate: the projection booth the page is being screened in.
+   Screen blend so the lamp and the dust add light to the room, while the
+   image's blacks leave the page's own blacks untouched. */
 .ambient__plate{
   position:absolute; inset:0;
-  background-image:var(--plate, none);
+  background-image:url("backdrop-sm.webp");
   background-size:cover;
-  background-position:50% 28%;
-  opacity:var(--plate-opacity,.3);
+  background-position:50% 44%;
+  background-repeat:no-repeat;
+  /* Mirrored so the lamp falls in the open right half of the frame rather
+     than directly behind the title. */
+  transform:scaleX(-1);
+  opacity:.5;
   mix-blend-mode:screen;
-  /* Keep the middle clear: that is where the reading happens. */
-  -webkit-mask-image:radial-gradient(115% 88% at 50% 34%,
-    rgba(0,0,0,.28) 0%, rgba(0,0,0,.62) 46%, #000 100%);
-  mask-image:radial-gradient(115% 88% at 50% 34%,
-    rgba(0,0,0,.28) 0%, rgba(0,0,0,.62) 46%, #000 100%);
+  /* Strongest around the lamp, falling away toward the reading column so
+     type never sits in the haze. */
+  -webkit-mask-image:radial-gradient(92% 116% at 72% 44%,
+    #000 0%, rgba(0,0,0,.82) 30%, rgba(0,0,0,.4) 58%, rgba(0,0,0,.12) 82%, transparent 100%);
+  mask-image:radial-gradient(92% 116% at 72% 44%,
+    #000 0%, rgba(0,0,0,.82) 30%, rgba(0,0,0,.4) 58%, rgba(0,0,0,.12) 82%, transparent 100%);
+}
+@media (min-width:860px){
+  .ambient__plate{
+    background-image:url("backdrop.webp");
+    opacity:.58;
+  }
 }
 
 /* One projector, throwing from above. */
@@ -140,7 +151,9 @@ a{ color:inherit; }
 
 .ambient__vignette{
   position:absolute; inset:0;
-  background:radial-gradient(120% 88% at 50% 42%, transparent 42%, rgba(4,2,3,.72) 100%);
+  background:
+    radial-gradient(118% 86% at 50% 42%, transparent 34%, rgba(4,2,3,.82) 100%),
+    linear-gradient(100deg, rgba(6,4,5,.62) 0%, rgba(6,4,5,.3) 34%, transparent 62%);
 }
 
 .grain{
@@ -942,17 +955,53 @@ body.is-open .rail--right .rail__text{ color:var(--velvet-hi); }
 }
 .is-unlocked .card__cta[href]:active{ transform:scale(.985); }
 
-/* ══ SKELETON ═════════════════════════════════════════════════════════════ */
-.skel{ min-width:0; }
-.skel__poster{ aspect-ratio:2/3; width:100%; border:1px solid var(--rule); }
-.skel__line{ height:10px; margin-top:13px; }
-.skel__line--short{ width:48%; height:8px; margin-top:8px; }
-.skel__poster,.skel__line{
-  background:linear-gradient(100deg, rgba(244,236,225,.03) 28%, rgba(244,236,225,.075) 44%, rgba(244,236,225,.03) 60%);
-  background-size:240% 100%;
-  animation:shimmer 1.7s linear infinite;
+/* ══ THREADING (loading) ══════════════════════════════════════════════════
+   Two reels turning — feed and take-up — while the sheet is fetched. Fades
+   in after a beat so a fast load never flashes it.                         */
+.threading{
+  display:flex; flex-direction:column; align-items:center;
+  gap:clamp(20px,3.4vw,30px);
+  padding-block:clamp(64px,13vw,130px);
+  opacity:0;
+  animation:threadIn .5s var(--ease) .28s forwards;
 }
-@keyframes shimmer{ to{ background-position:-240% 0; } }
+@keyframes threadIn{ to{ opacity:1; } }
+
+.threading__reels{
+  display:flex; align-items:center; gap:clamp(16px,3vw,30px);
+  color:var(--light-3);
+}
+/* The film path between the two reels. */
+.threading__reels::before{
+  content:"";
+  position:absolute;
+  width:clamp(92px,17vw,168px); height:1px;
+  background:repeating-linear-gradient(to right,
+    rgba(244,236,225,.3) 0 6px, transparent 6px 12px);
+  transform:translateY(-1px);
+}
+.threading__reels{ position:relative; }
+
+.reel{ display:block; }
+.reel__svg{ display:block; }
+.reel--feed .reel__svg{
+  width:clamp(54px,9vw,74px); aspect-ratio:1;
+  animation:spool 3.4s linear infinite;
+}
+.reel--take .reel__svg{
+  width:clamp(38px,6.4vw,52px); aspect-ratio:1;
+  color:var(--velvet-hi);
+  opacity:.85;
+  animation:spool 2.1s linear infinite reverse;
+}
+@keyframes spool{ to{ transform:rotate(360deg); } }
+
+.threading__note{ color:var(--light-4); }
+
+@media (prefers-reduced-motion:reduce){
+  .threading{ opacity:1; animation:none; }
+  .reel--feed .reel__svg,.reel--take .reel__svg{ animation:none; }
+}
 
 /* ══ NOTICE ═══════════════════════════════════════════════════════════════ */
 .notice{
