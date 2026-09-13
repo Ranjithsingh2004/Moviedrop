@@ -420,7 +420,7 @@
     lastPal = pi;
     var pal = PALETTES[pi];
 
-    var kind = (h >> 8) % 4;
+    var kind = (h >>> 8) % 4;
     if (kind === lastKind) kind = (kind + 1) % 4;
     lastKind = kind;
     var t = layoutTitle(title);
@@ -711,11 +711,16 @@
     el.grid.hidden = false;
 
     var n = list.length;
-    el.sectionNote.textContent = n + (n === 1 ? ' film' : ' films') +
-      ' · ' + (unlocked ? 'now showing' : 'locked');
-    el.heroCount.textContent = (unlocked ? 'Now showing' : 'This reel') +
-      ' · ' + n + (n === 1 ? ' film' : ' films');
+    el.sectionNote.textContent = n + (n === 1 ? ' film, ' : ' films, ') +
+      (unlocked ? 'now showing' : 'locked');
+
     el.heroCount.hidden = false;
+    el.heroCount.className = 'slug slug--count tick';
+    if (window.MovieDropTick) {
+      window.MovieDropTick(el.heroCount, n, '', n === 1 ? ' film in this reel' : ' films in this reel');
+    } else {
+      el.heroCount.textContent = n + (n === 1 ? ' film in this reel' : ' films in this reel');
+    }
 
     hydratePosters(pairs);
   }
@@ -738,9 +743,15 @@
     el.gateUnlocked.hidden = !unlocked;
     document.body.classList.toggle('is-open', unlocked);
     if (el.railStatus) {
-      el.railStatus.innerHTML = unlocked
-        ? 'SCREENING &nbsp;·&nbsp; OPEN'
-        : 'SCREENING &nbsp;·&nbsp; LOCKED';
+      var next = unlocked ? 'SCREENING OPEN' : 'SCREENING LOCKED';
+      if (el.railStatus.textContent.trim() !== next) {
+        el.railStatus.classList.remove('is-changing');
+        void el.railStatus.offsetWidth;
+        el.railStatus.classList.add('is-changing');
+        setTimeout(function () { el.railStatus.textContent = next; }, 150);
+      } else {
+        el.railStatus.textContent = next;
+      }
     }
     paintUnlockBtn();
   }
@@ -803,11 +814,20 @@
     store.set(LS_UNLOCK, 'yes');
     paintGate();
 
-    // The lamp strikes once.
-    if (el.flash && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      el.flash.classList.remove('is-firing');
-      void el.flash.offsetWidth;                 // restart the animation
-      el.flash.classList.add('is-firing');
+    // The one orchestrated moment: the lamp strikes, the film advances a
+    // frame, then the shutters lift across the grid in order.
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      if (el.flash) {
+        el.flash.classList.remove('is-firing');
+        void el.flash.offsetWidth;               // restart the animation
+        el.flash.classList.add('is-firing');
+      }
+      if (el.grid) {
+        el.grid.classList.remove('is-advancing');
+        void el.grid.offsetWidth;
+        el.grid.classList.add('is-advancing');
+        setTimeout(function () { el.grid.classList.remove('is-advancing'); }, 600);
+      }
     }
 
     // Re-point each locked CTA at its real destination.
@@ -829,9 +849,7 @@
 
     if (movies.length) {
       el.sectionNote.textContent = movies.length +
-        (movies.length === 1 ? ' film' : ' films') + ' · now showing';
-      el.heroCount.textContent = 'Now showing · ' + movies.length +
-        (movies.length === 1 ? ' film' : ' films');
+        (movies.length === 1 ? ' film, ' : ' films, ') + 'now showing';
     }
 
     toast('Screening open — now showing');

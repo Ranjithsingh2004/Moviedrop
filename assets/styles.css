@@ -269,9 +269,9 @@ body.is-open .rail--right .rail__text{ color:var(--velvet-hi); }
   transition:background .45s var(--ease), border-color .45s var(--ease), backdrop-filter .45s;
 }
 .topbar.is-stuck{
-  background:rgba(10,7,8,.82);
-  backdrop-filter:blur(14px) saturate(130%);
-  -webkit-backdrop-filter:blur(14px) saturate(130%);
+  background:rgba(10,7,8,.93);
+  backdrop-filter:blur(20px) saturate(125%);
+  -webkit-backdrop-filter:blur(20px) saturate(125%);
   border-bottom-color:var(--rule);
 }
 .topbar__inner{ display:flex; align-items:center; justify-content:space-between; gap:14px; }
@@ -323,7 +323,13 @@ body.is-open .rail--right .rail__text{ color:var(--velvet-hi); }
   padding-block:clamp(54px,13vh,120px) clamp(64px,12vh,110px);
   border-bottom:1px solid var(--rule);
 }
-.hero__inner{ position:relative; }
+.hero__inner{
+  position:relative;
+  /* cinema.js drives --recede (0→1) as the hero leaves. */
+  transform:scale(calc(1 - var(--recede,0) * .07)) translate3d(0,calc(var(--recede,0) * -26px),0);
+  opacity:calc(1 - var(--recede,0) * .85);
+  transform-origin:12% 40%;
+}
 
 .slug--hero{ margin-bottom:clamp(26px,5vw,42px); }
 
@@ -638,11 +644,20 @@ body.is-open .rail--right .rail__text{ color:var(--velvet-hi); }
 }
 .cinema-ready .card{
   opacity:0;
-  transform:translate3d(0,22px,0);
+  transform:translate3d(0,14px,0);
 }
+/* Never clip the observed element itself — see note above. */
+.cinema-ready .card .poster{ clip-path:inset(0 0 100% 0); }
+
 .card.is-in{
-  opacity:1; transform:none;
-  transition:opacity .8s var(--ease), transform .8s var(--ease-film);
+  opacity:1;
+  transform:none;
+  transition:opacity .44s var(--ease), transform .66s var(--ease-film);
+  transition-delay:var(--d,0ms);
+}
+.card.is-in .poster{
+  clip-path:inset(0 0 0 0);
+  transition:clip-path .78s var(--ease-film), border-color .5s var(--ease), box-shadow .5s var(--ease);
   transition-delay:var(--d,0ms);
 }
 
@@ -950,18 +965,35 @@ a.credits__name:hover{ color:var(--velvet-hi); }
 }
 
 /* ══ SCROLL REVEAL ════════════════════════════════════════════════════════ */
-/* Only hidden once the motion layer is confirmed running. */
+/* Content is exposed like a frame reaching the gate — not faded up. */
 .cinema-ready [data-reveal]{
   opacity:0;
-  transform:translate3d(0,26px,0);
+  clip-path:inset(0 0 42% 0);
 }
 [data-reveal].is-in{
-  opacity:1; transform:none;
-  transition:opacity .9s var(--ease), transform .9s var(--ease-film);
+  opacity:1;
+  clip-path:inset(0 0 0 0);
+  transition:opacity .55s var(--ease), clip-path .85s var(--ease-film);
   transition-delay:var(--d,0ms);
 }
+
+/* The section title wipes across like a title card. */
+.slate__title span{
+  display:inline-block;
+  clip-path:inset(0 0 0 0);
+}
+.cinema-ready .slate__title span{
+  clip-path:inset(0 102% 0 0);
+  transform:translate3d(-.06em,0,0);
+}
+.slate.is-in .slate__title span{
+  clip-path:inset(0 0 0 0);
+  transform:none;
+  transition:clip-path 1s var(--ease-film) .1s, transform 1s var(--ease-film) .1s;
+}
 /* Failsafe: whatever happens, revealed content wins. */
-[data-reveal].is-in,.card.is-in{ opacity:1 !important; transform:none !important; }
+[data-reveal].is-in,.card.is-in{ opacity:1 !important; clip-path:none !important; }
+.card.is-in .poster{ clip-path:inset(0 0 0 0) !important; }
 
 /* ══ MOTION PREFERENCES ═══════════════════════════════════════════════════ */
 @media (prefers-reduced-motion:reduce){
@@ -989,3 +1021,79 @@ a.credits__name:hover{ color:var(--velvet-hi); }
   .card:hover .poster__glow{ opacity:1; }
 }
 @media (prefers-reduced-motion:reduce){ .poster__glow{ display:none; } }
+
+/* ══ THE GATE: motion that answers an action ══════════════════════════════ */
+
+/* Poster tilt — the print lifts toward you as you look at it. cinema.js sets
+   --tx/--ty in the range -1..1 from the pointer. Desktop only. */
+@media (hover:hover) and (pointer:fine){
+  .poster{ perspective:900px; }
+  .poster__frame{ transform-style:preserve-3d; }
+  .card:hover .poster__frame{
+    transform:
+      scale(1.05)
+      rotateX(calc(var(--ty,0) * -3.2deg))
+      rotateY(calc(var(--tx,0) * 3.2deg));
+  }
+  /* The keyline lifts with it, so the print reads as one object. */
+  .card:hover .poster::after{ transform:translate3d(calc(var(--tx,0) * 3px), calc(var(--ty,0) * 3px), 0); }
+  .poster::after{ transition:inset .55s var(--ease-film), border-color .5s var(--ease), transform .5s var(--ease); }
+}
+
+/* The film advancing one frame — fired on unlock. */
+.grid.is-advancing{ animation:advance 460ms var(--ease-film); }
+@keyframes advance{
+  0%   { transform:translate3d(0,0,0); }
+  16%  { transform:translate3d(0,-7px,0); }
+  34%  { transform:translate3d(0,4px,0); }
+  58%  { transform:translate3d(0,-2px,0); }
+  100% { transform:translate3d(0,0,0); }
+}
+
+/* Locked bands split from the middle like a shutter. */
+.poster__band{
+  transform-origin:50% 50%;
+  transition:transform .5s var(--ease-film);
+}
+
+/* Rail status changes with a gate blink rather than swapping silently. */
+.rail__text.is-changing{ animation:railBlink 620ms var(--ease-film); }
+@keyframes railBlink{
+  0%   { opacity:1; }
+  22%  { opacity:0; letter-spacing:.7em; }
+  60%  { opacity:1; }
+  74%  { opacity:.4; }
+  100% { opacity:1; }
+}
+
+/* Watch CTA: perforations run across it on hover. */
+.card.is-unlocked .card__cta[href]::before{
+  content:"";
+  position:absolute; inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='42'%3E%3Crect x='9' y='17' width='8' height='8' rx='1.6' fill='%23f4ece1' fill-opacity='.5'/%3E%3C/svg%3E");
+  background-repeat:repeat-x;
+  background-position:0 50%;
+  opacity:0;
+  transform:translate3d(-30%,0,0);
+  transition:opacity .3s var(--ease), transform .9s var(--ease-film);
+  pointer-events:none;
+}
+.card.is-unlocked .card__cta[href]:hover::before{
+  opacity:.5;
+  transform:translate3d(30%,0,0);
+}
+
+/* Count ticking up on load. */
+.tick{ font-variant-numeric:tabular-nums; }
+
+@media (prefers-reduced-motion:reduce){
+  .hero__inner{ transform:none !important; opacity:1 !important; }
+  .cinema-ready [data-reveal],
+  .cinema-ready .card,
+  .cinema-ready .card .poster,
+  .cinema-ready .slate__title span{ opacity:1 !important; clip-path:none !important; transform:none !important; }
+  .grid.is-advancing{ animation:none; }
+  .rail__text.is-changing{ animation:none; }
+  .card.is-unlocked .card__cta[href]::before{ display:none; }
+  .card:hover .poster__frame{ transform:none; }
+}
