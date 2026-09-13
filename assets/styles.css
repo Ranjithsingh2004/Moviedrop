@@ -832,24 +832,28 @@ body.is-open .rail--right .rail__text{ color:var(--velvet-hi); }
 .poster__marks span:nth-child(4){ bottom:0; right:0; border-left:0; border-top:0; transform:translate(-5px,-5px); }
 .card:hover .poster__marks span{ opacity:1; transform:translate(0,0); }
 
-/* Film number, top-left. */
+/* Catalogue number and platform share one row, so they cannot collide on a
+   narrow poster — the platform truncates instead. */
+.poster__head{
+  position:absolute; top:14px; left:14px; right:14px; z-index:8;
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+}
 .poster__no{
-  position:absolute; top:14px; left:14px; z-index:8;
-  font-family:var(--mono); font-size:9px;
-  letter-spacing:.2em;
+  flex:0 0 auto;
+  font-family:var(--mono); font-size:9.5px;
+  letter-spacing:.18em;
   color:rgba(244,236,225,.68);
   text-shadow:0 1px 4px rgba(0,0,0,.8);
 }
 
-/* Platform, top-right — the bottom of the frame belongs to the title. */
+/* Platform — the bottom of the frame belongs to the title. */
 .poster__tag{
-  position:absolute; right:14px; top:14px; z-index:8;
+  flex:0 1 auto; min-width:0;
   display:inline-flex; align-items:center; gap:6px;
-  font-family:var(--mono); font-size:8.5px;
-  letter-spacing:.16em; text-transform:uppercase;
+  font-family:var(--mono); font-size:9.5px;
+  letter-spacing:.14em; text-transform:uppercase;
   color:rgba(244,236,225,.82);
   text-shadow:0 1px 4px rgba(0,0,0,.9);
-  max-width:calc(100% - 84px);
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
 }
 .poster__tag::before{
@@ -875,8 +879,8 @@ body.is-open .rail--right .rail__text{ color:var(--velvet-hi); }
   display:flex; align-items:center; justify-content:center; gap:7px;
   background:rgba(6,3,4,.8);
   border-block:1px solid rgba(244,236,225,.18);
-  font-family:var(--mono); font-size:8.5px;
-  letter-spacing:.2em; text-transform:uppercase;
+  font-family:var(--mono); font-size:9.5px;
+  letter-spacing:.16em; text-transform:uppercase;
   color:rgba(244,236,225,.9);
   text-align:center;
 }
@@ -1272,6 +1276,7 @@ a.credits__name:hover{ color:var(--velvet-hi); }
   /* Staggered so the edge of every covered frame stays visible. */
   top:calc(clamp(58px,9vh,92px) + var(--i,0) * 13px);
   height:clamp(430px,70vh,640px);
+  height:min(clamp(430px,70svh,640px), calc(100svh - 104px));
   margin-bottom:clamp(22px,4vw,40px);
 }
 .frame:last-child{ margin-bottom:0; }
@@ -1366,7 +1371,11 @@ a.credits__name:hover{ color:var(--velvet-hi); }
 .frame .poster__locked{ z-index:7; }
 
 @media (max-width:720px){
-  .frame{ height:clamp(410px,68vh,600px); top:calc(52px + var(--i,0) * 10px); }
+  .frame{
+    top:calc(52px + var(--i,0) * 10px);
+    height:clamp(410px,68vh,600px);
+    height:min(clamp(410px,68svh,600px), calc(100svh - 84px));
+  }
   .frame__inner{ flex-direction:column; gap:16px; padding:clamp(14px,4vw,20px); }
   .frame__inner::before,.frame__inner::after{ width:11px; }
   .frame__poster{
@@ -1380,6 +1389,21 @@ a.credits__name:hover{ color:var(--velvet-hi); }
   .frame__actions .btn{ width:100%; }
 }
 
+/* Landscape phones: too short for the stacked layout, so lay the frame out
+   horizontally and let the poster set the height. */
+@media (max-height:560px) and (min-width:560px){
+  .frame{
+    top:calc(30px + var(--i,0) * 8px);
+    height:min(420px, calc(100svh - 56px));
+  }
+  .frame__inner{ flex-direction:row; padding:12px; gap:16px; }
+  .frame__poster{ align-self:stretch; }
+  .frame__poster .poster{ height:100%; width:auto; }
+  .frame__body{ gap:8px; padding-right:8px; }
+  .frame__title{ font-size:clamp(24px,3.4vw,38px); }
+  .frame__actions .btn{ min-height:44px; }
+}
+
 /* Sticky stacking is disorienting when motion is reduced — flatten it. */
 @media (prefers-reduced-motion:reduce){
   .frame{ position:static; height:auto; }
@@ -1387,3 +1411,15 @@ a.credits__name:hover{ color:var(--velvet-hi); }
   .frame__dim{ display:none; }
   .leader__lamp,.leader__cone,.leader__dust{ animation:none; opacity:1; }
 }
+
+/* Chromatic pass over a Now Showing poster (chromatic.js; desktop only).
+   It renders the same photograph, so it can simply fade in on top. */
+.poster__gl{
+  position:absolute; inset:0;
+  width:100%; height:100%;
+  display:block;
+  opacity:0;
+  transition:opacity .45s var(--ease);
+  pointer-events:none;
+}
+.poster__gl.is-ready{ opacity:1; }

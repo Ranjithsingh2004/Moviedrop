@@ -160,6 +160,7 @@ studio.html         owner-only poster picker
 assets/styles.css   the visual system — tokens, layout, components
 assets/app.js       sheet loading, poster logic, follow gate
 assets/cinema.js    motion only — projector leader, reveals, stack, timecode
+assets/chromatic.js WebGL pass over Now Showing posters (desktop only)
 assets/backdrop.webp    projection-booth plate (desktop)
 assets/backdrop-sm.webp same, for narrow screens
 assets/studio.css   studio styles

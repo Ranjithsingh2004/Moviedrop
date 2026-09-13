@@ -605,6 +605,8 @@
       img.className = 'poster__img';
       slot.appendChild(img);
       requestAnimationFrame(function () { img.classList.add('is-ready'); });
+      // Marquee frames with a real photograph get the chromatic pass.
+      if (window.MovieDropChroma) window.MovieDropChroma(card, url);
     };
     img.onerror = function () { /* generated poster stays — nothing to do */ };
 
@@ -664,8 +666,10 @@
         '<div class="poster__glow" aria-hidden="true"></div>' +
         '<div class="poster__sheen" aria-hidden="true"></div>' +
         '<div class="poster__marks" aria-hidden="true"><span></span><span></span><span></span><span></span></div>' +
-        '<span class="poster__no" aria-hidden="true">FILM ' + String(i + 1).padStart(3, '0') + '</span>' +
-        '<span class="poster__tag" style="--ott:' + esc(movie.ott.color) + '">' + esc(movie.ott.label) + '</span>' +
+        '<div class="poster__head">' +
+          '<span class="poster__no" aria-hidden="true">FILM ' + String(i + 1).padStart(3, '0') + '</span>' +
+          '<span class="poster__tag" style="--ott:' + esc(movie.ott.color) + '">' + esc(movie.ott.label) + '</span>' +
+        '</div>' +
         '<div class="poster__locked">' +
           '<p class="poster__band">' +
             '<svg aria-hidden="true"><use href="#i-lock"/></svg>Screening locked' +
