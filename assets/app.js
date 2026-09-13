@@ -56,6 +56,8 @@
     marquee:     $('marquee'),
     marqueeTrack:$('marqueeTrack'),
     marqueeNote: $('marqueeNote'),
+    cutting:     $('cutting'),
+    lightbox:    $('lightbox'),
     railStatus:  $('railStatus'),
     topbar:      $('topbar')
   };
@@ -702,6 +704,35 @@
     return frame;
   }
 
+  function buildSlide(movie, i) {
+    var slide = document.createElement('article');
+    slide.className = 'slide';
+
+    var open = unlocked && movie.link;
+    var mount = open
+      ? '<a class="slide__mount" href="' + esc(movie.link) + '" target="_blank" rel="noopener noreferrer" ' +
+        'aria-label="Watch ' + esc(movie.title) + ' on ' + esc(movie.ott.label) + '">'
+      : '<a class="slide__mount">';
+
+    slide.innerHTML =
+      mount +
+        '<div class="slide__win">' +
+          '<div class="poster">' +
+            '<div class="poster__frame">' +
+              '<div class="poster__art">' + buildPoster(movie.raw || movie.title, i) + '</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<p class="slide__label">' +
+          '<b>' + esc(movie.title) + '</b>' +
+          (movie.year ? '<span>' + esc(movie.year) + '</span>' : '') +
+        '</p>' +
+        '<span class="slide__glare" aria-hidden="true"></span>' +
+      '</div>';
+
+    return slide;
+  }
+
   function buildCard(movie, i) {
     var card = document.createElement('article');
     card.className = 'card' + (unlocked ? ' is-unlocked' : '');
@@ -766,6 +797,29 @@
       } else {
         el.marquee.hidden = true;
         el.marqueeTrack.innerHTML = '';
+      }
+    }
+
+    // The cutting room: a handful of loose frames, after the archive.
+    if (el.cutting && el.lightbox) {
+      var loose = list.slice(0, 6);
+      if (loose.length >= 3) {
+        var lfrag = document.createDocumentFragment();
+        loose.forEach(function (m, i) {
+          var slide = buildSlide(m, i);
+          lfrag.appendChild(slide);
+          pairs.push({ card: slide, movie: m });
+        });
+        el.lightbox.innerHTML = '';
+        el.lightbox.appendChild(lfrag);
+        el.cutting.hidden = false;
+        // Positions need real measurements, so scatter after layout.
+        requestAnimationFrame(function () {
+          if (window.MovieDropScatter) window.MovieDropScatter();
+        });
+      } else {
+        el.cutting.hidden = true;
+        el.lightbox.innerHTML = '';
       }
     }
 
@@ -909,6 +963,19 @@
     if (el.marqueeTrack) {
       Array.prototype.forEach.call(el.marqueeTrack.querySelectorAll('.frame'), function (fr, i) {
         setTimeout(function () { openOne(fr, movies[i]); }, 180 + i * 55);
+      });
+    }
+
+    if (el.lightbox) {
+      Array.prototype.forEach.call(el.lightbox.querySelectorAll('.slide'), function (sl, i) {
+        var m = movies[i];
+        var a = sl.querySelector('a.slide__mount');
+        if (a && m && m.link) {
+          a.setAttribute('href', m.link);
+          a.setAttribute('target', '_blank');
+          a.setAttribute('rel', 'noopener noreferrer');
+          a.setAttribute('aria-label', 'Watch ' + m.title + ' on ' + m.ott.label);
+        }
       });
     }
 

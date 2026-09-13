@@ -1423,3 +1423,100 @@ a.credits__name:hover{ color:var(--velvet-hi); }
   pointer-events:none;
 }
 .poster__gl.is-ready{ opacity:1; }
+
+/* ══ THE CUTTING ROOM ═════════════════════════════════════════════════════
+   Loose 35mm slide mounts on a light table, scattered and draggable. A coda
+   after the archive — never the way you are meant to browse.              */
+.cutting{ padding-block:clamp(40px,7vw,72px) 0; }
+
+.lightbox{
+  position:relative;
+  height:clamp(360px,56svh,560px);
+  margin-top:clamp(20px,4vw,34px);
+  overflow:hidden;
+  perspective:1400px;
+  /* Vertical panning stays the browser's, so the page always scrolls. */
+  touch-action:pan-y;
+  /* The table itself: a faint pool of light. */
+  background:radial-gradient(120% 90% at 50% 42%, rgba(244,236,225,.035), transparent 68%);
+  border-block:1px solid var(--rule);
+  cursor:grab;
+}
+.lightbox:active{ cursor:grabbing; }
+
+.slide{
+  position:absolute;
+  left:0; top:0;
+  width:clamp(124px,17vw,188px);
+  transform:translate3d(var(--x,0px), var(--y,0px), 0) rotate(var(--r,0deg));
+  transform-origin:50% 50%;
+  touch-action:pan-y;
+  -webkit-tap-highlight-color:transparent;
+  will-change:transform;
+}
+.slide.is-held{ z-index:40 !important; }
+.slide.is-settling{ transition:transform .55s var(--ease-film); }
+
+/* A slide mount: bone plastic, image window, typed label. */
+.slide__mount{
+  position:relative;
+  padding:9px 9px 0;
+  background:linear-gradient(168deg, #2a2422, #1a1614 70%);
+  border:1px solid rgba(244,236,225,.16);
+  box-shadow:
+    0 1px 0 rgba(244,236,225,.1) inset,
+    0 22px 44px -22px rgba(0,0,0,.95);
+  transform:rotateX(calc(var(--tx,0) * 9deg)) rotateY(calc(var(--ty,0) * 9deg));
+  transform-style:preserve-3d;
+  transition:transform .5s var(--ease);
+}
+.slide.is-held .slide__mount{ transition:none; }
+
+.slide__win{ position:relative; }
+.slide__win .poster{ border-color:rgba(0,0,0,.6); }
+
+.slide__label{
+  margin:0;
+  padding:8px 2px 9px;
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+  font-family:var(--mono); font-size:9.5px;
+  letter-spacing:.12em; text-transform:uppercase;
+  color:var(--light-3);
+}
+.slide__label b{
+  font-weight:400; color:var(--light);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0;
+}
+.slide__label span{ flex:0 0 auto; color:var(--light-4); }
+
+/* Glare rakes across as the mount tips. */
+.slide__glare{
+  position:absolute; inset:0;
+  pointer-events:none;
+  background:linear-gradient(112deg, transparent 36%, rgba(244,236,225,.16) 50%, transparent 64%);
+  opacity:var(--glare,0);
+  transition:opacity .4s var(--ease);
+}
+
+.cutting__hint{
+  margin:clamp(14px,2.4vw,20px) 0 0;
+  text-align:center;
+  color:var(--light-4);
+}
+
+@media (prefers-reduced-motion:reduce){
+  .lightbox{ cursor:default; }
+  .slide__mount{ transform:none; }
+  .slide__glare{ display:none; }
+  .slide.is-settling{ transition:none; }
+}
+
+/* The mount is the film's link when the screening is open. */
+a.slide__mount{
+  display:block;
+  text-decoration:none;
+  color:inherit;
+  cursor:grab;
+}
+a.slide__mount[href]{ cursor:pointer; }
+.slide.is-held a.slide__mount{ cursor:grabbing; }
