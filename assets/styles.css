@@ -85,6 +85,23 @@ a{ color:inherit; }
 /* ══ ATMOSPHERE ═══════════════════════════════════════════════════════════ */
 .ambient{ position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
 
+/* Backdrop plate. Off until --plate is set on :root, so no request is made
+   and nothing 404s while there is no image. To switch it on, drop the file in
+   and set:  :root{ --plate:url("assets/backdrop.webp"); }                    */
+.ambient__plate{
+  position:absolute; inset:0;
+  background-image:var(--plate, none);
+  background-size:cover;
+  background-position:50% 28%;
+  opacity:var(--plate-opacity,.3);
+  mix-blend-mode:screen;
+  /* Keep the middle clear: that is where the reading happens. */
+  -webkit-mask-image:radial-gradient(115% 88% at 50% 34%,
+    rgba(0,0,0,.28) 0%, rgba(0,0,0,.62) 46%, #000 100%);
+  mask-image:radial-gradient(115% 88% at 50% 34%,
+    rgba(0,0,0,.28) 0%, rgba(0,0,0,.62) 46%, #000 100%);
+}
+
 /* One projector, throwing from above. */
 .ambient__beam{
   position:absolute; left:50%; top:-58vh;
@@ -172,6 +189,10 @@ body > main, body > header, body > footer{ position:relative; z-index:1; }
   color:var(--light-4);
   white-space:nowrap;
   transition:color .5s var(--ease);
+}
+.rail__text--tc{
+  letter-spacing:.26em;
+  font-variant-numeric:tabular-nums;
 }
 .rail--left  .rail__text{ writing-mode:vertical-rl; transform:rotate(180deg); }
 .rail--right .rail__text{ writing-mode:vertical-rl; }
@@ -953,6 +974,32 @@ body.is-open .rail--right .rail__text{ color:var(--velvet-hi); }
   font-size:14px; color:var(--light-2);
 }
 
+/* ══ CUE MARK ═════════════════════════════════════════════════════════════
+   The change-over dot punched into the top corner of a release print, a few
+   frames before the reel ends. Fires when a new section takes the frame.   */
+.cue-mark{
+  position:fixed;
+  top:clamp(38px,7vh,64px); right:clamp(38px,6vw,74px);
+  z-index:58;
+  width:clamp(34px,5vw,46px); aspect-ratio:1;
+  border-radius:50%;
+  border:1.5px solid rgba(244,236,225,.82);
+  box-shadow:0 0 22px rgba(244,236,225,.3), inset 0 0 14px rgba(244,236,225,.18);
+  opacity:0;
+  pointer-events:none;
+}
+.cue-mark.is-firing{ animation:cueBurn 760ms steps(1,end); }
+@keyframes cueBurn{
+  0%   { opacity:0; transform:scale(.94); }
+  8%   { opacity:.9; transform:scale(1); }
+  22%  { opacity:0; }
+  34%  { opacity:.8; }
+  50%  { opacity:0; }
+  62%  { opacity:.55; }
+  100% { opacity:0; }
+}
+@media (prefers-reduced-motion:reduce){ .cue-mark{ display:none; } }
+
 /* ══ FLASH + TOAST ════════════════════════════════════════════════════════ */
 .flash{
   position:fixed; inset:0; z-index:150;
@@ -1189,11 +1236,14 @@ a.credits__name:hover{ color:var(--velvet-hi); }
   background:linear-gradient(160deg, var(--ink-2), var(--ink-0) 72%);
   overflow:hidden;
   /* cinema.js sets --cover 0→1 as the next frame rises over this one. */
-  transform:scale(calc(1 - var(--cover,0) * .06));
-  transform-origin:50% 22%;
+  /* Origin at the top edge: a covered frame slides back into the pile
+     instead of shrinking toward its own middle. */
+  transform:scale(calc(1 - var(--cover,0) * .055)) translate3d(0,0,0);
+  transform-origin:50% 0%;
   box-shadow:0 -18px 44px -26px rgba(0,0,0,.9);
-  transition:transform .1s linear;
+  /* No transition — cinema.js writes this every frame while scrolling. */
 }
+.frame__inner.is-live{ will-change:transform; }
 
 /* Sprocket strips down both edges: this panel is one 35mm frame. */
 .frame__inner::before,

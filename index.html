@@ -54,6 +54,7 @@
 
 <!-- ══ Atmosphere ══ -->
 <div class="ambient" aria-hidden="true">
+  <div class="ambient__plate" id="plate"></div>
   <div class="ambient__beam" id="beam"></div>
   <div class="ambient__leak ambient__leak--a" id="leakA"></div>
   <div class="ambient__leak ambient__leak--b" id="leakB"></div>
@@ -64,7 +65,7 @@
 
 <!-- ══ Edge rails (desktop) ══ -->
 <div class="rail rail--left" aria-hidden="true">
-  <span class="rail__text">MOVIEDROP &nbsp;·&nbsp; REEL 01 &nbsp;·&nbsp; 35MM</span>
+  <span class="rail__text rail__text--tc" id="railTime">00:00:00:00</span>
 </div>
 <div class="rail rail--right" aria-hidden="true">
   <span class="rail__text" id="railStatus">SCREENING &nbsp;·&nbsp; LOCKED</span>
@@ -241,6 +242,9 @@
     <p class="credits__end">· FIN ·</p>
   </div>
 </footer>
+
+<!-- Change-over cue mark -->
+<div class="cue-mark" id="cueMark" aria-hidden="true"></div>
 
 <!-- Projector flash used on unlock -->
 <div class="flash" id="flash" aria-hidden="true"></div>

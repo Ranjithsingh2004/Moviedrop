@@ -192,20 +192,40 @@
      once the frames exist.                                               */
   (function stack() {
     var frames = [];
+    var live = false;
     var ticking = false;
+    var rects = [];
+
+    // Ease the recede so the pile settles instead of tracking scroll linearly.
+    function smooth(t) { return t * t * (3 - 2 * t); }
 
     function measure() {
       ticking = false;
-      for (var i = 0; i < frames.length; i++) {
-        var f = frames[i];
-        var next = frames[i + 1];
-        if (!next) { f.style.setProperty('--cover', '0'); continue; }
-        var fr = f.getBoundingClientRect();
-        if (!fr.height) continue;
-        var nTop = next.getBoundingClientRect().top;
-        var cover = (fr.bottom - nTop) / fr.height;
-        cover = cover < 0 ? 0 : cover > 1 ? 1 : cover;
-        f.style.setProperty('--cover', cover.toFixed(3));
+      if (!frames.length) return;
+
+      // Read everything first…
+      var i;
+      for (i = 0; i < frames.length; i++) rects[i] = frames[i].getBoundingClientRect();
+
+      // …then write, so the loop never forces a layout mid-pass.
+      var inView = false;
+      for (i = 0; i < frames.length; i++) {
+        var r = rects[i];
+        if (r.bottom > -200 && r.top < window.innerHeight + 200) inView = true;
+
+        var cover = 0;
+        if (rects[i + 1] && r.height) {
+          cover = (r.bottom - rects[i + 1].top) / r.height;
+          cover = cover < 0 ? 0 : cover > 1 ? 1 : cover;
+          cover = smooth(cover);
+        }
+        frames[i].style.setProperty('--cover', cover.toFixed(3));
+      }
+
+      // Only hint the compositor while the stack is actually on screen.
+      if (inView !== live) {
+        live = inView;
+        for (i = 0; i < frames.length; i++) frames[i].classList.toggle('is-live', live);
       }
     }
 
@@ -222,15 +242,76 @@
       if (reduced) return;                 // flattened to a plain list in CSS
       var track = $('marqueeTrack');
       frames = track ? [].slice.call(track.querySelectorAll('.frame__inner')) : [];
+      rects = new Array(frames.length);
       schedule();
     }
 
     window.MovieDropStack = collect;
 
-    // The frames arrive with the sheet, which may land before or after this
-    // file runs — so watch for them rather than relying on call order.
     var track = $('marqueeTrack');
     if (track) new MutationObserver(collect).observe(track, { childList: true });
+  })();
+
+  /* ── Timecode ───────────────────────────────────────────────────────────
+     The left rail runs a 24fps timecode against scroll position, so the rail
+     reports where you are in the reel rather than repeating the brand.     */
+  (function timecode() {
+    var node = $('railTime');
+    if (!node) return;
+
+    var last = '';
+    var TOTAL = 11 * 60 + 40;            // a plausible reel length, in seconds
+
+    function pad(n, w) { return String(n).padStart(w || 2, '0'); }
+
+    function paint() {
+      var doc = document.documentElement;
+      var max = doc.scrollHeight - window.innerHeight;
+      var p = max > 0 ? Math.min(1, Math.max(0, (window.scrollY || 0) / max)) : 0;
+
+      var t = p * TOTAL;
+      var out = '00:' + pad(Math.floor(t / 60)) + ':' + pad(Math.floor(t % 60)) +
+                ':' + pad(Math.floor((t % 1) * 24));
+      if (out !== last) { last = out; node.textContent = out; }
+    }
+
+    var queued = false;
+    window.addEventListener('scroll', function () {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(function () { queued = false; paint(); });
+    }, { passive: true });
+
+    paint();
+  })();
+
+  /* ── Change-over cue ────────────────────────────────────────────────────
+     Fires once as each major section takes the frame.                      */
+  (function cue() {
+    var mark = $('cueMark');
+    if (!mark || reduced || !('IntersectionObserver' in window)) return;
+
+    var timer = null;
+    function burn() {
+      mark.classList.remove('is-firing');
+      void mark.offsetWidth;
+      mark.classList.add('is-firing');
+      clearTimeout(timer);
+      timer = setTimeout(function () { mark.classList.remove('is-firing'); }, 900);
+    }
+
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        burn();
+        io.unobserve(e.target);          // one cue per section, per visit
+      });
+    }, { rootMargin: '-35% 0px -55% 0px' });
+
+    ['marquee', 'drops'].forEach(function (id) {
+      var n = $(id);
+      if (n) io.observe(n);
+    });
   })();
 
   /* ── Counting a number up ──────────────────────────────────────────────
