@@ -107,13 +107,6 @@ builds into a pile of 35mm frames. It needs at least two films; below that the
 archive grid carries the reel on its own. The archive below always lists
 everything, so browsing stays one screen of scrolling rather than one per film.
 
-## Free preview
-
-The first film plays without following. A sample proves the links are real
-and converts markedly better than gating everything; the gate then covers the
-rest. To gate every film, set `FREE_PREVIEW = 0` at the top of
-`assets/app.js`.
-
 ## The follow gate
 
 The gate runs in two steps, and step two stays disabled until step one has

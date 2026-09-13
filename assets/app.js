@@ -15,10 +15,6 @@
   var SHEET_TAB = 'Sheet1';
   var INSTAGRAM = 'https://www.instagram.com/by_.meghana/';
 
-  // How many films play without following. A free sample proves the links are
-  // real, and converts far better than gating everything. Set to 0 to gate all.
-  var FREE_PREVIEW = 1;
-
   var LS_UNLOCK  = 'moviedrop.unlocked.v1';
   var LS_VISITED = 'moviedrop.visited.v1';
   var LS_POSTERS = 'moviedrop.posters.v2';
@@ -648,12 +644,11 @@
      ===================================================================== */
   // Shared by the grid cards and the Now Showing frames.
   function ctaFor(movie, cls) {
-    var open = unlocked || movie.free;
     if (!movie.link) {
       return '<span class="' + cls + ' card__cta--soon">' +
         '<svg aria-hidden="true"><use href="#i-clock"/></svg>Coming soon</span>';
     }
-    if (open) {
+    if (unlocked) {
       return '<a class="' + cls + '" href="' + esc(movie.link) + '" target="_blank" rel="noopener noreferrer" ' +
         'aria-label="Watch ' + esc(movie.title) + ' on ' + esc(movie.ott.label) + '">' +
         '<svg aria-hidden="true"><use href="#i-play"/></svg>Watch</a>';
@@ -674,19 +669,17 @@
           '<span class="poster__no" aria-hidden="true">FILM ' + String(i + 1).padStart(3, '0') + '</span>' +
           '<span class="poster__tag" style="--ott:' + esc(movie.ott.color) + '">' + esc(movie.ott.label) + '</span>' +
         '</div>' +
-        (movie.free
-          ? '<span class="poster__free">Free</span>'
-          : '<div class="poster__locked">' +
-              '<p class="poster__band">' +
-                '<svg aria-hidden="true"><use href="#i-lock"/></svg>Locked' +
-              '</p>' +
-            '</div>') +
+        '<div class="poster__locked">' +
+          '<p class="poster__band">' +
+            '<svg aria-hidden="true"><use href="#i-lock"/></svg>Locked' +
+          '</p>' +
+        '</div>' +
       '</div>';
   }
 
   function buildCard(movie, i) {
     var card = document.createElement('article');
-    card.className = 'card' + (unlocked || movie.free ? ' is-unlocked' : '');
+    card.className = 'card' + (unlocked ? ' is-unlocked' : '');
     card.style.setProperty('--d', Math.min(i, 11) * 65 + 'ms');
 
     card.innerHTML =
@@ -716,8 +709,6 @@
       return;
     }
 
-    list.forEach(function (m, i) { m.free = i < FREE_PREVIEW && !!m.link; });
-
     var frag = document.createDocumentFragment();
     var pairs = list.map(function (m, i) {
       var card = buildCard(m, i);
@@ -731,17 +722,12 @@
 
 
     var n = list.length;
-    var free = Math.min(FREE_PREVIEW, n);
-    var shut = Math.max(0, n - free);
 
-    el.sectionNote.textContent = unlocked
-      ? n + (n === 1 ? ' film, all open' : ' films, all open')
-      : (shut ? free + ' free, ' + shut + ' locked' : n + ' films');
+    el.sectionNote.textContent = n + (n === 1 ? ' film, ' : ' films, ') +
+      (unlocked ? 'all open' : 'locked');
 
     if (el.dockText) {
-      el.dockText.textContent = shut
-        ? shut + (shut === 1 ? ' film locked' : ' films locked')
-        : 'Follow for the next drop';
+      el.dockText.textContent = n + (n === 1 ? ' film locked' : ' films locked');
     }
 
     el.heroCount.hidden = false;
