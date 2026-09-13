@@ -33,17 +33,6 @@
 
 <a class="skip-link" href="#drops">Skip to the collection</a>
 
-<!-- ══ Projector leader. Removed by cinema.js; never blocks content. ══ -->
-<div class="leader" id="leader" aria-hidden="true" hidden>
-  <div class="leader__lamp"></div>
-  <div class="leader__cone"></div>
-  <div class="leader__dust"></div>
-  <div class="leader__core">
-    <span class="leader__mark">MOVIEDROP</span>
-    <span class="leader__sub">REEL 01</span>
-  </div>
-</div>
-
 <!-- ══ Fixed viewfinder frame ══ -->
 <div class="viewfinder" aria-hidden="true">
   <span class="viewfinder__corner viewfinder__corner--tl"></span>
@@ -64,13 +53,6 @@
 </div>
 
 <!-- ══ Edge rails (desktop) ══ -->
-<div class="rail rail--left" aria-hidden="true">
-  <span class="rail__text rail__text--tc" id="railTime">00:00:00:00</span>
-</div>
-<div class="rail rail--right" aria-hidden="true">
-  <span class="rail__text" id="railStatus">SCREENING &nbsp;·&nbsp; LOCKED</span>
-</div>
-
 <header class="topbar" id="topbar">
   <div class="shell topbar__inner">
     <a class="wordmark" href="#top" aria-label="MovieDrop home">
@@ -90,96 +72,35 @@
   <section class="hero">
     <div class="shell hero__inner">
 
-      <p class="slug slug--hero">
-        REEL 01, CURATED BY
-        <a href="https://www.instagram.com/by_.meghana/" target="_blank" rel="noopener noreferrer">@BY_.MEGHANA</a>
-      </p>
-
       <h1 class="titleCard">
         <span class="titleCard__word" aria-label="MovieDrop">
           <span class="titleCard__l">M</span><span class="titleCard__l">O</span><span class="titleCard__l">V</span><span class="titleCard__l">I</span><span class="titleCard__l">E</span><span class="titleCard__l titleCard__l--accent">D</span><span class="titleCard__l titleCard__l--accent">R</span><span class="titleCard__l titleCard__l--accent">O</span><span class="titleCard__l titleCard__l--accent">P</span>
         </span>
       </h1>
 
-      <p class="hero__line">
-        Your next obsession is<br><em>one frame away.</em>
-      </p>
+      <p class="hero__line">Films worth your evening, and where to watch them.</p>
+      <p class="slug hero__count" id="heroCount" hidden></p>
 
-      <div class="hero__foot">
-        <a class="cue" href="#drops">
-          <span class="cue__label">ROLL FILM</span>
-          <span class="cue__rule"><i></i></span>
-        </a>
-        <p class="slug slug--count" id="heroCount" hidden></p>
+      <!-- The ask, above the fold. -->
+      <div class="ask" id="gate" data-state="locked">
+        <div id="gateLocked">
+          <a class="btn btn--ig btn--block" id="followBtn"
+             href="https://www.instagram.com/by_.meghana/" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-instagram"/></svg>
+            <span>Follow @by_.meghana</span>
+          </a>
+          <button class="btn btn--solid btn--block" id="unlockBtn" type="button"></button>
+          <p class="ask__step" id="gateStep">Two taps. Then it stays open.</p>
+        </div>
+
+        <div class="ask__open" id="gateUnlocked" hidden>
+          <span class="ask__mark" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg></span>
+          <p class="ask__openText">Every link below is open. Enjoy the drop.</p>
+        </div>
       </div>
 
     </div>
-
     <div class="perf perf--hero" aria-hidden="true"></div>
-  </section>
-
-  <!-- ═══════════════ SCREENING PASS ═══════════════ -->
-  <section class="shell pass-wrap" aria-labelledby="gateTitle">
-    <div class="pass" id="gate" data-state="locked" data-reveal>
-
-      <!-- Locked -->
-      <div class="pass__body" id="gateLocked">
-        <div class="pass__stub" aria-hidden="true">
-          <span class="pass__stubText">ADMIT ONE</span>
-          <span class="pass__stubNo">№ 001</span>
-        </div>
-
-        <div class="pass__main">
-          <p class="slug">SCREENING PASS<i></i><span class="pass__state">LOCKED</span></p>
-          <h2 class="pass__title" id="gateTitle">Enter the screening</h2>
-          <p class="pass__copy">
-            Follow <strong>@by_.meghana</strong> on Instagram to open the collection.
-            Two taps, then it stays open.
-          </p>
-
-          <div class="pass__actions">
-            <a class="btn btn--ig" id="followBtn"
-               href="https://www.instagram.com/by_.meghana/" target="_blank" rel="noopener noreferrer">
-              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-instagram"/></svg>
-              <span>Follow @by_.meghana</span>
-            </a>
-            <button class="btn btn--solid" id="unlockBtn" type="button"></button>
-          </div>
-
-          <p class="pass__step" id="gateStep">Step 1 — follow. Step 2 opens the collection.</p>
-        </div>
-      </div>
-
-      <!-- Unlocked -->
-      <div class="pass__open" id="gateUnlocked" hidden>
-        <span class="pass__openMark" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><use href="#i-check"/></svg>
-        </span>
-        <div class="pass__openText">
-          <p class="slug">SCREENING<i></i><span class="pass__state pass__state--open">OPEN</span></p>
-          <h2 class="pass__openTitle">Now showing.</h2>
-        </div>
-        <a class="btn btn--quiet" href="https://www.instagram.com/by_.meghana/" target="_blank" rel="noopener noreferrer">
-          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-instagram"/></svg>
-          <span>More on Instagram</span>
-        </a>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- ═══════════════ NOW SHOWING (sticky stack) ═══════════════ -->
-  <section class="marquee" id="marquee" hidden aria-labelledby="marqueeTitle">
-    <div class="shell">
-      <div class="slate" data-reveal>
-        <div class="slate__left">
-          <h2 class="slate__title" id="marqueeTitle"><span>Now Showing</span></h2>
-        </div>
-        <p class="slug slug--right" id="marqueeNote"></p>
-      </div>
-      <div class="perf" aria-hidden="true"></div>
-    </div>
-    <div class="shell marquee__track" id="marqueeTrack"></div>
   </section>
 
   <!-- ═══════════════ THE COLLECTION ═══════════════ -->
@@ -187,7 +108,7 @@
 
     <div class="slate" data-reveal>
       <div class="slate__left">
-        <h2 class="slate__title" id="dropsTitle"><span>The Archive</span></h2>
+        <h2 class="slate__title" id="dropsTitle"><span>The Films</span></h2>
       </div>
       <p class="slug slug--right" id="sectionNote">LOADING&hellip;</p>
     </div>
@@ -216,23 +137,29 @@
       </button>
     </div>
 
-  </section>
-
-  <!-- ═══════════════ THE CUTTING ROOM ═══════════════ -->
-  <section class="cutting" id="cutting" hidden aria-labelledby="cuttingTitle">
-    <div class="shell">
-      <div class="slate" data-reveal>
-        <div class="slate__left">
-          <h2 class="slate__title" id="cuttingTitle"><span>The Cutting Room</span></h2>
-        </div>
-        <p class="slug slug--right">Loose frames — push them about</p>
-      </div>
-      <div class="perf" aria-hidden="true"></div>
+    <!-- The ask again, for anyone who scrolled past it. -->
+    <div class="encore" id="encore" hidden>
+      <p class="encore__line">Following @by_.meghana unlocks every link here.</p>
+      <a class="btn btn--ig btn--block" href="https://www.instagram.com/by_.meghana/"
+         target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-instagram"/></svg>
+        <span>Follow @by_.meghana</span>
+      </a>
     </div>
-    <div class="lightbox" id="lightbox"></div>
+
   </section>
 
 </main>
+
+<!-- Stays in thumb reach on a phone until the links are open. -->
+<div class="dock" id="dock" hidden>
+  <p class="dock__text" id="dockText"></p>
+  <a class="btn btn--ig" href="https://www.instagram.com/by_.meghana/"
+     target="_blank" rel="noopener noreferrer">
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-instagram"/></svg>
+    <span>Follow</span>
+  </a>
+</div>
 
 <footer class="credits">
   <div class="perf" aria-hidden="true"></div>
@@ -257,8 +184,6 @@
 </footer>
 
 <!-- Change-over cue mark -->
-<div class="cue-mark" id="cueMark" aria-hidden="true"></div>
-
 <!-- Projector flash used on unlock -->
 <div class="flash" id="flash" aria-hidden="true"></div>
 
@@ -303,7 +228,5 @@
 
 <script src="assets/app.js" defer></script>
 <script src="assets/cinema.js" defer></script>
-<script src="assets/chromatic.js" defer></script>
-<script src="assets/scatter.js" defer></script>
 </body>
 </html>

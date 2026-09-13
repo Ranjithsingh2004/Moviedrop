@@ -15,6 +15,10 @@
   var SHEET_TAB = 'Sheet1';
   var INSTAGRAM = 'https://www.instagram.com/by_.meghana/';
 
+  // How many films play without following. A free sample proves the links are
+  // real, and converts far better than gating everything. Set to 0 to gate all.
+  var FREE_PREVIEW = 1;
+
   var LS_UNLOCK  = 'moviedrop.unlocked.v1';
   var LS_VISITED = 'moviedrop.visited.v1';
   var LS_POSTERS = 'moviedrop.posters.v2';
@@ -53,12 +57,9 @@
     toast:       $('toast'),
     gateStep:    $('gateStep'),
     flash:       $('flash'),
-    marquee:     $('marquee'),
-    marqueeTrack:$('marqueeTrack'),
-    marqueeNote: $('marqueeNote'),
-    cutting:     $('cutting'),
-    lightbox:    $('lightbox'),
-    railStatus:  $('railStatus'),
+    encore:      $('encore'),
+    dock:        $('dock'),
+    dockText:    $('dockText'),
     topbar:      $('topbar')
   };
 
@@ -647,11 +648,12 @@
      ===================================================================== */
   // Shared by the grid cards and the Now Showing frames.
   function ctaFor(movie, cls) {
+    var open = unlocked || movie.free;
     if (!movie.link) {
       return '<span class="' + cls + ' card__cta--soon">' +
         '<svg aria-hidden="true"><use href="#i-clock"/></svg>Coming soon</span>';
     }
-    if (unlocked) {
+    if (open) {
       return '<a class="' + cls + '" href="' + esc(movie.link) + '" target="_blank" rel="noopener noreferrer" ' +
         'aria-label="Watch ' + esc(movie.title) + ' on ' + esc(movie.ott.label) + '">' +
         '<svg aria-hidden="true"><use href="#i-play"/></svg>Watch</a>';
@@ -672,70 +674,19 @@
           '<span class="poster__no" aria-hidden="true">FILM ' + String(i + 1).padStart(3, '0') + '</span>' +
           '<span class="poster__tag" style="--ott:' + esc(movie.ott.color) + '">' + esc(movie.ott.label) + '</span>' +
         '</div>' +
-        '<div class="poster__locked">' +
-          '<p class="poster__band">' +
-            '<svg aria-hidden="true"><use href="#i-lock"/></svg>Screening locked' +
-          '</p>' +
-        '</div>' +
+        (movie.free
+          ? '<span class="poster__free">Free</span>'
+          : '<div class="poster__locked">' +
+              '<p class="poster__band">' +
+                '<svg aria-hidden="true"><use href="#i-lock"/></svg>Locked' +
+              '</p>' +
+            '</div>') +
       '</div>';
-  }
-
-  function buildFrame(movie, i) {
-    var frame = document.createElement('article');
-    frame.className = 'frame' + (unlocked ? ' is-unlocked' : '');
-    frame.style.setProperty('--i', i);
-
-    frame.innerHTML =
-      '<div class="frame__inner">' +
-        '<div class="frame__poster">' + posterMarkup(movie, i) + '</div>' +
-        '<div class="frame__body">' +
-          '<p class="slug frame__no">FILM ' + String(i + 1).padStart(3, '0') + '</p>' +
-          '<h3 class="frame__title">' + esc(movie.title) + '</h3>' +
-          '<p class="frame__meta">' +
-            '<span class="dot" style="--ott:' + esc(movie.ott.color) + '"></span>' +
-            esc(movie.ott.label) +
-            (movie.year ? '<i aria-hidden="true"></i>' + esc(movie.year) : '') +
-          '</p>' +
-          '<div class="frame__actions">' + ctaFor(movie, 'btn btn--solid card__cta') + '</div>' +
-        '</div>' +
-        '<div class="frame__dim" aria-hidden="true"></div>' +
-      '</div>';
-
-    return frame;
-  }
-
-  function buildSlide(movie, i) {
-    var slide = document.createElement('article');
-    slide.className = 'slide';
-
-    var open = unlocked && movie.link;
-    var mount = open
-      ? '<a class="slide__mount" href="' + esc(movie.link) + '" target="_blank" rel="noopener noreferrer" ' +
-        'aria-label="Watch ' + esc(movie.title) + ' on ' + esc(movie.ott.label) + '">'
-      : '<a class="slide__mount">';
-
-    slide.innerHTML =
-      mount +
-        '<div class="slide__win">' +
-          '<div class="poster">' +
-            '<div class="poster__frame">' +
-              '<div class="poster__art">' + buildPoster(movie.raw || movie.title, i) + '</div>' +
-            '</div>' +
-          '</div>' +
-        '</div>' +
-        '<p class="slide__label">' +
-          '<b>' + esc(movie.title) + '</b>' +
-          (movie.year ? '<span>' + esc(movie.year) + '</span>' : '') +
-        '</p>' +
-        '<span class="slide__glare" aria-hidden="true"></span>' +
-      '</div>';
-
-    return slide;
   }
 
   function buildCard(movie, i) {
     var card = document.createElement('article');
-    card.className = 'card' + (unlocked ? ' is-unlocked' : '');
+    card.className = 'card' + (unlocked || movie.free ? ' is-unlocked' : '');
     card.style.setProperty('--d', Math.min(i, 11) * 65 + 'ms');
 
     card.innerHTML =
@@ -765,6 +716,8 @@
       return;
     }
 
+    list.forEach(function (m, i) { m.free = i < FREE_PREVIEW && !!m.link; });
+
     var frag = document.createDocumentFragment();
     var pairs = list.map(function (m, i) {
       var card = buildCard(m, i);
@@ -776,63 +729,27 @@
     el.grid.appendChild(frag);
     el.grid.hidden = false;
 
-    // Now Showing: the first few films, stacked. Below two there is nothing
-    // to stack, so the archive grid carries the whole reel on its own.
-    var featured = list.slice(0, 4);
-    if (el.marquee && el.marqueeTrack) {
-      if (featured.length >= 2) {
-        var mfrag = document.createDocumentFragment();
-        featured.forEach(function (m, i) {
-          var fr = buildFrame(m, i);
-          mfrag.appendChild(fr);
-          pairs.push({ card: fr, movie: m });
-        });
-        el.marqueeTrack.innerHTML = '';
-        el.marqueeTrack.appendChild(mfrag);
-        el.marquee.hidden = false;
-        el.marqueeNote.textContent = featured.length === list.length
-          ? 'the full reel'
-          : 'first ' + featured.length + ' of ' + list.length;
-        if (window.MovieDropStack) window.MovieDropStack();
-      } else {
-        el.marquee.hidden = true;
-        el.marqueeTrack.innerHTML = '';
-      }
-    }
-
-    // The cutting room: a handful of loose frames, after the archive.
-    if (el.cutting && el.lightbox) {
-      var loose = list.slice(0, 6);
-      if (loose.length >= 3) {
-        var lfrag = document.createDocumentFragment();
-        loose.forEach(function (m, i) {
-          var slide = buildSlide(m, i);
-          lfrag.appendChild(slide);
-          pairs.push({ card: slide, movie: m });
-        });
-        el.lightbox.innerHTML = '';
-        el.lightbox.appendChild(lfrag);
-        el.cutting.hidden = false;
-        // Positions need real measurements, so scatter after layout.
-        requestAnimationFrame(function () {
-          if (window.MovieDropScatter) window.MovieDropScatter();
-        });
-      } else {
-        el.cutting.hidden = true;
-        el.lightbox.innerHTML = '';
-      }
-    }
 
     var n = list.length;
-    el.sectionNote.textContent = n + (n === 1 ? ' film, ' : ' films, ') +
-      (unlocked ? 'now showing' : 'locked');
+    var free = Math.min(FREE_PREVIEW, n);
+    var shut = Math.max(0, n - free);
+
+    el.sectionNote.textContent = unlocked
+      ? n + (n === 1 ? ' film, all open' : ' films, all open')
+      : (shut ? free + ' free, ' + shut + ' locked' : n + ' films');
+
+    if (el.dockText) {
+      el.dockText.textContent = shut
+        ? shut + (shut === 1 ? ' film locked' : ' films locked')
+        : 'Follow for the next drop';
+    }
 
     el.heroCount.hidden = false;
     el.heroCount.className = 'slug slug--count tick';
     if (window.MovieDropTick) {
-      window.MovieDropTick(el.heroCount, n, '', n === 1 ? ' film in this reel' : ' films in this reel');
+      window.MovieDropTick(el.heroCount, n, '', n === 1 ? ' film this week' : ' films this week');
     } else {
-      el.heroCount.textContent = n + (n === 1 ? ' film in this reel' : ' films in this reel');
+      el.heroCount.textContent = n + (n === 1 ? ' film this week' : ' films this week');
     }
 
     hydratePosters(pairs);
@@ -855,17 +772,8 @@
     el.gateLocked.hidden = unlocked;
     el.gateUnlocked.hidden = !unlocked;
     document.body.classList.toggle('is-open', unlocked);
-    if (el.railStatus) {
-      var next = unlocked ? 'SCREENING OPEN' : 'SCREENING LOCKED';
-      if (el.railStatus.textContent.trim() !== next) {
-        el.railStatus.classList.remove('is-changing');
-        void el.railStatus.offsetWidth;
-        el.railStatus.classList.add('is-changing');
-        setTimeout(function () { el.railStatus.textContent = next; }, 150);
-      } else {
-        el.railStatus.textContent = next;
-      }
-    }
+    if (el.encore) el.encore.hidden = unlocked;
+    if (el.dock) el.dock.hidden = unlocked;
     paintUnlockBtn();
   }
 
@@ -877,12 +785,12 @@
     el.unlockBtn.classList.toggle('is-primed', ready);
     el.unlockBtn.innerHTML = ready
       ? '<svg aria-hidden="true"><use href="#i-unlock"/></svg>' +
-        '<span>I&rsquo;ve followed &mdash; open the screening</span>'
+        '<span>I&rsquo;ve followed &mdash; open them</span>'
       : '<svg aria-hidden="true"><use href="#i-lock"/></svg>' +
-        '<span>Follow first to open</span>';
+        '<span>Follow first</span>';
     el.gateStep.textContent = ready
-      ? 'Back from Instagram? Take your seat.'
-      : 'Step 1 — follow. Step 2 opens the collection.';
+      ? 'Back from Instagram? Tap to open.'
+      : 'Two taps. Then it stays open.';
   }
 
   var awaitingReturn = false;
@@ -960,28 +868,10 @@
       setTimeout(function () { openOne(card, movies[i]); }, 180 + Math.min(i, 14) * 55);
     });
 
-    if (el.marqueeTrack) {
-      Array.prototype.forEach.call(el.marqueeTrack.querySelectorAll('.frame'), function (fr, i) {
-        setTimeout(function () { openOne(fr, movies[i]); }, 180 + i * 55);
-      });
-    }
-
-    if (el.lightbox) {
-      Array.prototype.forEach.call(el.lightbox.querySelectorAll('.slide'), function (sl, i) {
-        var m = movies[i];
-        var a = sl.querySelector('a.slide__mount');
-        if (a && m && m.link) {
-          a.setAttribute('href', m.link);
-          a.setAttribute('target', '_blank');
-          a.setAttribute('rel', 'noopener noreferrer');
-          a.setAttribute('aria-label', 'Watch ' + m.title + ' on ' + m.ott.label);
-        }
-      });
-    }
 
     if (movies.length) {
       el.sectionNote.textContent = movies.length +
-        (movies.length === 1 ? ' film, ' : ' films, ') + 'now showing';
+        (movies.length === 1 ? ' film, all open' : ' films, all open');
     }
 
     toast('Screening open — now showing');

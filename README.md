@@ -107,16 +107,12 @@ builds into a pile of 35mm frames. It needs at least two films; below that the
 archive grid carries the reel on its own. The archive below always lists
 everything, so browsing stays one screen of scrolling rather than one per film.
 
-## The cutting room
+## Free preview
 
-After the archive, the first few films appear again as loose 35mm slide
-mounts on a light table — scattered, tilted, and draggable, with inertia and
-a bounce off the table edge. Tapping one opens its film; dragging one does
-not. Needs at least three films, and hides itself below that.
-
-On a phone, vertical panning is left to the browser and a gesture that reads
-as a scroll is handed back before anything is captured, so the page can
-always be scrolled from on top of a slide.
+The first film plays without following. A sample proves the links are real
+and converts markedly better than gating everything; the gate then covers the
+rest. To gate every film, set `FREE_PREVIEW = 0` at the top of
+`assets/app.js`.
 
 ## The follow gate
 
@@ -170,9 +166,7 @@ index.html          the public page
 studio.html         owner-only poster picker
 assets/styles.css   the visual system — tokens, layout, components
 assets/app.js       sheet loading, poster logic, follow gate
-assets/cinema.js    motion only — projector leader, reveals, stack, timecode
-assets/chromatic.js WebGL pass over Now Showing posters (desktop only)
-assets/scatter.js   the cutting room's draggable slide mounts
+assets/cinema.js    motion only — reveals, sticky bar, dock
 assets/backdrop.webp    projection-booth plate (desktop)
 assets/backdrop-sm.webp same, for narrow screens
 assets/studio.css   studio styles
