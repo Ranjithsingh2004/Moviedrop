@@ -1,10 +1,9 @@
 /* ==========================================================================
    MovieDrop Stats
 
-   Reads aggregates from the Apps Script backend by JSONP, because an Apps
-   Script web app cannot be relied on to send CORS headers. The passphrase is
-   checked on that server, not here — this page never holds the data, and a
-   wrong key gets nothing back.
+   Reads aggregates from the Convex HTTP action at <base>/stats. The
+   passphrase is compared on that server, never here, so a wrong key gets a
+   401 and no data — reading this page's source tells you nothing.
 
    Charts are inline SVG. Palette validated with the dataviz skill's script
    against this page's surface (#100b0d):
@@ -208,42 +207,40 @@
         : '<tr><td colspan="6">Nothing recorded yet.</td></tr>') + '</tbody>';
   }
 
-  /* ── Fetch by JSONP ──────────────────────────────────────────────────── */
-  var key = '', days = 30, seq = 0;
+  /* ── Fetch ───────────────────────────────────────────────────────────
+     Convex HTTP actions send CORS headers, so this is an ordinary request.
+     The passphrase is checked on the server; a wrong one gets a 401 and no
+     data.                                                                 */
+  var key = '', days = 30, inflight = null;
 
-  function load(onErr) {
-    var url = window.MOVIEDROP_STATS_URL;
-    if (!url) { onErr('not-configured'); return; }
+  function load(done) {
+    var base = (window.MOVIEDROP_STATS_URL || '').replace(/\/+$/, '');
+    if (!base) { done('not-configured'); return; }
 
-    var name = '__mdstats' + (++seq);
-    var s = document.createElement('script');
-    var done = false;
+    if (inflight) inflight.abort();
+    var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    inflight = ctrl;
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 15000);
 
-    var timer = setTimeout(function () {
-      if (done) return;
-      done = true;
-      cleanup();
-      onErr('timeout');
-    }, 12000);
-
-    window[name] = function (data) {
-      done = true;
-      clearTimeout(timer);
-      cleanup();
-      if (data && data.error) { onErr(data.error); return; }
-      render(data);
-      onErr(null);
-    };
-
-    function cleanup() {
-      try { delete window[name]; } catch (e) { window[name] = undefined; }
-      if (s.parentNode) s.parentNode.removeChild(s);
-    }
-
-    s.src = url + (url.indexOf('?') === -1 ? '?' : '&') +
-      'key=' + encodeURIComponent(key) + '&days=' + days + '&callback=' + name;
-    s.onerror = function () { if (!done) { done = true; clearTimeout(timer); cleanup(); onErr('network'); } };
-    document.head.appendChild(s);
+    fetch(base + '/stats?key=' + encodeURIComponent(key) + '&days=' + days,
+          ctrl ? { signal: ctrl.signal } : {})
+      .then(function (r) {
+        clearTimeout(timer);
+        inflight = null;
+        if (r.status === 401) return r.json().then(function () { throw new Error('unauthorised'); });
+        if (r.status === 500) return r.json().then(function (d) {
+          throw new Error(d && d.error === 'no-passphrase-set' ? 'no-passphrase-set' : 'server');
+        });
+        if (!r.ok) throw new Error('http-' + r.status);
+        return r.json();
+      })
+      .then(function (data) { render(data); done(null); })
+      .catch(function (err) {
+        clearTimeout(timer);
+        inflight = null;
+        var name = err && err.name === 'AbortError' ? 'timeout' : (err && err.message) || 'network';
+        done(name);
+      });
   }
 
   /* ── Wiring ──────────────────────────────────────────────────────────── */
@@ -252,7 +249,9 @@
   function fail(reason) {
     var msg = reason === 'unauthorised' ? 'That passphrase does not match.'
             : reason === 'not-configured' ? 'No stats backend is set up yet. See README → Stats.'
+            : reason === 'no-passphrase-set' ? 'The backend has no passphrase set. Run: npx convex env set STATS_PASSPHRASE "…"'
             : reason === 'timeout' ? 'The backend did not answer. Check the deployment is live.'
+            : /^http-404$/.test(reason) ? 'The stats route is not deployed yet. Run: npx convex deploy'
             : 'Could not reach the backend.';
     lockErr.textContent = msg;
     lockErr.hidden = false;
@@ -318,7 +317,7 @@
   if (!window.MOVIEDROP_STATS_URL) {
     var n = $('note');
     n.hidden = false;
-    n.innerHTML = 'No stats backend is configured yet. Paste your Apps Script Web App URL into ' +
+    n.innerHTML = 'No stats backend is configured yet. Put your Convex HTTP Actions URL into ' +
                   '<code>assets/config.js</code> — the steps are in the README under <b>Stats</b>.';
     document.querySelector('.lockCard').appendChild(n);
   }

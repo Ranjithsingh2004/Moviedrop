@@ -13,8 +13,9 @@
 (function () {
   'use strict';
 
-  var URL_ = window.MOVIEDROP_STATS_URL;
-  if (!URL_) return;
+  var BASE = (window.MOVIEDROP_STATS_URL || '').replace(/\/+$/, '');
+  if (!BASE) return;
+  var URL_ = BASE + '/track';
 
   function sid() {
     try {

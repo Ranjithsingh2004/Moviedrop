@@ -138,34 +138,48 @@ so private mode and in-app browsers degrade quietly.
 Follow, how many unlocked, which films get opened, day by day, plus every
 event in a table you can export as CSV.
 
-It records nothing until you set it up. No cookies, no third party, no
-cross-site identifiers — the session id is a random value that dies with the
-browser tab, and exists only so one visit isn't counted four times.
+It is backed by Convex. No cookies, no third party, no cross-site
+identifiers — the session id is a random value that dies with the browser
+tab, and exists only so one visit isn't counted four times. Timestamps are
+set on the server, never trusted from the browser.
 
-### Setting it up (about two minutes)
+### Deploying the backend
 
-1. Create a **new, empty Google Sheet** — a private one, not the sheet with
-   your films. This is where events land.
-2. In it: **Extensions → Apps Script**. Delete whatever is there and paste
-   the contents of `apps-script.gs` from this repo.
-3. Change `PASSPHRASE` at the top to something only you and your sister know.
-4. **Deploy → New deployment → Web app**, with
-   *Execute as:* **Me** and *Who has access:* **Anyone**. Authorise it when
-   Google asks.
-5. Copy the `/exec` URL it gives you into `assets/config.js`:
-   `window.MOVIEDROP_STATS_URL = 'https://script.google.com/macros/s/…/exec';`
-6. Commit and push. Vercel redeploys, and the dashboard is at
-   `your-site.vercel.app/stats.html`.
+The Convex functions live in `convex/`. From the repo root:
+
+```bash
+npx convex dev        # once, to link this folder to your deployment
+npx convex env set STATS_PASSPHRASE "something-only-you-know"
+npx convex deploy
+```
+
+`convex dev` will ask you to log in and pick the deployment; choose the
+existing one. After `deploy`, the two routes are live:
+
+```
+POST  <your>.convex.site/track    records an event
+GET   <your>.convex.site/stats    returns aggregates, passphrase required
+```
+
+The base URL is already set in `assets/config.js`. Blank that value out and
+the site records nothing and makes no requests.
+
+To change the passphrase later, run `npx convex env set` again — no redeploy
+needed.
 
 ### Why it is built this way
 
-The events sheet stays **private**, and the Apps Script is the only way in.
-The passphrase is checked on Google's servers, not in the browser — so unlike
-`/studio.html`, reading the page source gets you nothing. That is also why the
-dashboard reads over JSONP: an Apps Script web app can't be relied on to send
-CORS headers.
+The passphrase is compared inside the Convex HTTP action, so it never reaches
+the browser. Unlike `/studio.html`, reading this page's source gets you
+nothing: a wrong key returns 401 and no data.
 
-To change the passphrase later, edit it in the Apps Script and redeploy.
+Counts are per session — one visit that views, follows and unlocks is one
+person at each step, not three events. Film opens are the exception and count
+every tap, since one person opening three films is three opens. The dashboard
+says so on the panel.
+
+A query reads at most 20,000 events per window; past that the response is
+marked truncated. At this site's scale that is years of traffic.
 
 ## Deploying
 
@@ -196,11 +210,13 @@ assets/styles.css   the visual system — tokens, layout, components
 assets/app.js       sheet loading, poster logic, follow gate
 assets/cinema.js    motion only — reveals, sticky bar, dock
 assets/config.js    the one place the stats backend URL goes
+convex/schema.ts    the events table
+convex/events.ts    record a event, and the dashboard's aggregation
+convex/http.ts      /track and /stats, with CORS and the passphrase check
 assets/track.js     event beacon (inert until config.js is filled in)
 stats.html          passphrase-gated dashboard
 assets/stats.css    dashboard styles
 assets/stats.js     dashboard charts and JSONP reader
-apps-script.gs      paste this into Google Apps Script — see Stats
 assets/backdrop.webp    projection-booth plate (desktop)
 assets/backdrop-sm.webp same, for narrow screens
 assets/studio.css   studio styles

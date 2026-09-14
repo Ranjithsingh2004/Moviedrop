@@ -2,3 +2,5 @@ node_modules/
 .vercel
 .DS_Store
 *.log
+convex/_generated/
+.env.local

@@ -1,9 +1,9 @@
 /* ==========================================================================
-   MovieDrop — one place to point the site at its stats backend.
+   MovieDrop — where the stats backend lives.
 
-   Paste the Apps Script Web App URL below and everything else follows: the
-   site starts recording, and /stats.html starts reading. Leave it empty and
-   nothing is recorded, no requests are made, and the site behaves exactly as
-   it did before. See README → Stats.
+   This is the Convex HTTP Actions base URL (the .convex.site one, not
+   .convex.cloud). The site posts events to <base>/track and the dashboard
+   reads <base>/stats. Blank it out and nothing is recorded, no requests are
+   made, and the site behaves exactly as it did before.
    ========================================================================== */
-window.MOVIEDROP_STATS_URL = '';
+window.MOVIEDROP_STATS_URL = 'https://quaint-kookabura-550.convex.site';

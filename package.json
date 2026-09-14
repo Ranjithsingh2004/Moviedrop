@@ -1,0 +1,14 @@
+{
+  "name": "moviedrop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MovieDrop — a static film-drop page with a Convex-backed stats dashboard",
+  "scripts": {
+    "deploy:stats": "convex deploy",
+    "dev:stats": "convex dev"
+  },
+  "devDependencies": {
+    "convex": "^1.45.0",
+    "typescript": "^5.6.0"
+  }
+}
