@@ -143,29 +143,48 @@ identifiers — the session id is a random value that dies with the browser
 tab, and exists only so one visit isn't counted four times. Timestamps are
 set on the server, never trusted from the browser.
 
-### Deploying the backend
+### The backend
 
-The Convex functions live in `convex/`. From the repo root:
-
-```bash
-npx convex dev        # once, to link this folder to your deployment
-npx convex env set STATS_PASSPHRASE "something-only-you-know"
-npx convex deploy
-```
-
-`convex dev` will ask you to log in and pick the deployment; choose the
-existing one. After `deploy`, the two routes are live:
+The Convex functions live in `convex/`. They are **deployed and live** on the
+`quaint-kookabura-550` deployment, with `STATS_PASSPHRASE` set. Both routes
+are serving:
 
 ```
-POST  <your>.convex.site/track    records an event
-GET   <your>.convex.site/stats    returns aggregates, passphrase required
+POST  quaint-kookabura-550.convex.site/track    records an event
+GET   quaint-kookabura-550.convex.site/stats    aggregates, passphrase required
 ```
 
 The base URL is already set in `assets/config.js`. Blank that value out and
 the site records nothing and makes no requests.
 
-To change the passphrase later, run `npx convex env set` again — no redeploy
-needed.
+To change the passphrase — no redeploy needed:
+
+```bash
+npx convex env set STATS_PASSPHRASE "something-else"
+```
+
+To push code changes in `convex/`:
+
+```bash
+npx convex deploy
+```
+
+Both need you logged in (`npx convex dev` once) or a `CONVEX_DEPLOY_KEY` in
+the environment.
+
+### One thing to know about the deployment
+
+This is a Convex **development** deployment, not a production one. It works
+and it is serving real traffic, but two consequences are worth knowing:
+
+- Running `npx convex dev` from a machine with older code will push that code
+  over what is deployed now.
+- Convex treats dev deployments as disposable; a production deployment is the
+  durable home for something the public uses.
+
+Moving is cheap: create a production deployment, run `npx convex deploy` with
+its key, set `STATS_PASSPHRASE` on it, and change the one URL in
+`assets/config.js`. Historic events do not carry over.
 
 ### Why it is built this way
 
@@ -211,7 +230,7 @@ assets/app.js       sheet loading, poster logic, follow gate
 assets/cinema.js    motion only — reveals, sticky bar, dock
 assets/config.js    the one place the stats backend URL goes
 convex/schema.ts    the events table
-convex/events.ts    record a event, and the dashboard's aggregation
+convex/events.ts    record an event, and the dashboard's aggregation
 convex/http.ts      /track and /stats, with CORS and the passphrase check
 assets/track.js     event beacon (inert until config.js is filled in)
 stats.html          passphrase-gated dashboard
