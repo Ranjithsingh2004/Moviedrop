@@ -197,6 +197,13 @@ marked truncated. At this site's scale that is years of traffic.
 
 ## Deploying
 
+The live site is **https://moviedrop-theta.vercel.app**, deployed from `main`
+on every push. The dashboard is at `/stats`.
+
+Note that `moviedrop.vercel.app` is a different site owned by someone else, and
+the `movie-drop` and `movielist` Vercel projects are older attempts that are not
+connected to this repo. Only the URL above is this project.
+
 Import the repo at [vercel.com](https://vercel.com/) and deploy. No framework,
 no build command, no environment variables required.
 
