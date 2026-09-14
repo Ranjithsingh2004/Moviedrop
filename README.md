@@ -207,6 +207,13 @@ connected to this repo. Only the URL above is this project.
 Import the repo at [vercel.com](https://vercel.com/) and deploy. No framework,
 no build command, no environment variables required.
 
+Assets are served with `no-cache` (see `vercel.json`), so a browser always
+revalidates them against the deploy rather than holding a copy. HTML and its
+CSS/JS must come from the same build: the page is served fresh but an asset
+cached beside it is not, and that pairing renders a broken page. The `?v=`
+on each asset URL is the second guard — bump it when changing a CSS or JS
+file and no browser can reuse an old copy.
+
 The `/api/poster` function is the only server-side piece. On a host without
 serverless functions the site detects that, stops calling it, and falls back to
 Wikipedia and its own generated posters.

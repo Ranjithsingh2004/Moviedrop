@@ -8,7 +8,7 @@
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "public, max-age=3600, must-revalidate"
+          "value": "no-cache"
         }
       ]
     },
@@ -27,7 +27,7 @@
     }
   ],
   "framework": null,
-  "installCommand": "echo \"static site \u2014 no install\"",
-  "buildCommand": "echo \"static site \u2014 no build\"",
+  "installCommand": "echo \"static site — no install\"",
+  "buildCommand": "echo \"static site — no build\"",
   "outputDirectory": "."
 }
