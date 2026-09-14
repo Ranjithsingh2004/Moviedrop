@@ -43,15 +43,15 @@
 .tagChip{
   margin-left:4px; padding:4px 8px;
   border:1px solid rgba(195,74,79,.34); background:rgba(143,29,38,.2);
-  color:var(--velvet-hi); font-family:var(--mono);
-  font-size:9.5px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--velvet-ink); font-family:var(--mono);
+  font-size:11px; letter-spacing:.1em; text-transform:uppercase;
 }
 .ranges{ display:flex; gap:0; border:1px solid var(--rule-2); }
 .range{
   min-height:38px; padding:9px 14px;
   border:0; border-right:1px solid var(--rule-2);
   background:transparent; color:var(--light-3);
-  font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase;
+  font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase;
   cursor:pointer;
 }
 .range:last-child{ border-right:0; }
@@ -66,14 +66,14 @@
 @media (min-width:820px){ .tiles{ grid-template-columns:repeat(4,minmax(0,1fr)); } }
 .tile{ padding:clamp(16px,3vw,22px); border:1px solid var(--rule); background:rgba(244,236,225,.022); }
 .tile__k{
-  margin:0; font-family:var(--mono); font-size:9.5px;
+  margin:0; font-family:var(--mono); font-size:11px;
   letter-spacing:.18em; text-transform:uppercase; color:var(--light-4);
 }
 .tile__v{
   margin:10px 0 0; font-family:var(--display);
   font-size:clamp(30px,7vw,46px); line-height:.92; font-variant-numeric:tabular-nums;
 }
-.tile__sub{ margin:6px 0 0; font-family:var(--mono); font-size:10px; color:var(--light-3); letter-spacing:.1em; }
+.tile__sub{ margin:6px 0 0; font-family:var(--mono); font-size:11px; color:var(--light-3); letter-spacing:.1em; }
 
 /* ── Panels ─────────────────────────────────────────────────────────────── */
 .panel{
@@ -89,7 +89,7 @@
 
 /* ── Charts ─────────────────────────────────────────────────────────────── */
 .chart{ width:100%; display:block; overflow:visible; }
-.chart text{ font-family:var(--mono); font-size:10px; letter-spacing:.06em; fill:var(--light-3); }
+.chart text{ font-family:var(--mono); font-size:11px; letter-spacing:.06em; fill:var(--light-3); }
 .chart .val{ fill:var(--light); font-size:11px; }
 .chart .axis{ stroke:rgba(244,236,225,.12); stroke-width:1; }
 .chart .grid{ stroke:rgba(244,236,225,.07); stroke-width:1; }
@@ -101,14 +101,14 @@
 .legend{ display:flex; flex-wrap:wrap; gap:8px 18px; margin:0 0 14px; padding:0; list-style:none; }
 .legend li{
   display:flex; align-items:center; gap:7px;
-  font-family:var(--mono); font-size:10px; letter-spacing:.12em;
+  font-family:var(--mono); font-size:11px; letter-spacing:.12em;
   text-transform:uppercase; color:var(--light-2);
 }
 .legend i{ width:10px; height:10px; flex:none; }
 
 .chartEmpty{
   padding:34px 8px; text-align:center;
-  font-family:var(--mono); font-size:10.5px; letter-spacing:.16em;
+  font-family:var(--mono); font-size:11px; letter-spacing:.16em;
   text-transform:uppercase; color:var(--light-4);
 }
 
@@ -117,7 +117,7 @@
   position:fixed; z-index:60; pointer-events:none;
   padding:9px 12px;
   border:1px solid var(--rule-2); background:rgba(12,8,9,.97);
-  font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; color:var(--light);
+  font-family:var(--mono); font-size:11px; letter-spacing:.08em; color:var(--light);
   opacity:0; transition:opacity .14s; white-space:nowrap;
 }
 .tip.is-on{ opacity:1; }
@@ -132,7 +132,7 @@
   border-bottom:1px solid var(--rule);
 }
 .tbl th{
-  font-weight:400; font-size:9.5px; letter-spacing:.16em; text-transform:uppercase;
+  font-weight:400; font-size:11px; letter-spacing:.16em; text-transform:uppercase;
   color:var(--light-4); position:sticky; top:0; background:#0e090b;
 }
 .tbl td{ color:var(--light-2); }
@@ -194,3 +194,8 @@
 .booting__slow{ margin:26px auto 0; max-width:300px; }
 .booting__slow[hidden]{ display:none !important; }
 .booting__slowNote{ margin:0 0 14px; font-size:13px; color:var(--light-3); }
+
+/* The event table has six columns and a phone has room for four, so it
+   scrolls. Say so, but only when it actually does. */
+.tableHint{ margin:-12px 0 16px; color:var(--velvet-ink); }
+.tableHint[hidden]{ display:none !important; }

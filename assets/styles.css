@@ -15,13 +15,14 @@
   /* Old theatre velvet — signage, not neon. */
   --velvet:#8f1d26;
   --velvet-hi:#c34a4f;
+  --velvet-ink:#d14f55;   /* the accent, but for small text on dark */
   --velvet-dim:rgba(143,29,38,.34);
 
   /* Projected light: warm, slightly off-white, like paper under a bulb. */
   --light:#f4ece1;
   --light-2:#b3a79b;
-  --light-3:#7a6f66;
-  --light-4:#4e4642;
+  --light-3:#9a8d81;
+  --light-4:#867972;
 
   --gold:#c9a227;
 
@@ -75,6 +76,14 @@ a{ color:inherit; }
   letter-spacing:.12em; text-transform:uppercase; text-decoration:none;
 }
 .skip-link:focus{ left:0; }
+
+/* In the document, off the screen — for headings a sighted reader gets from
+   the layout but a screen reader would otherwise miss. */
+.srOnly{
+  position:absolute; width:1px; height:1px; margin:-1px;
+  padding:0; border:0; overflow:hidden; white-space:nowrap;
+  clip:rect(0 0 0 0); clip-path:inset(50%);
+}
 
 .shell{
   width:100%; max-width:var(--shell);
@@ -198,7 +207,7 @@ body > main, body > header, body > footer{ position:relative; z-index:1; }
   display:flex; align-items:center; flex-wrap:wrap;
   gap:0 10px;
   font-family:var(--mono);
-  font-size:clamp(9.5px,2.3vw,11px);
+  font-size:clamp(11px,2.3vw,12px);
   font-weight:400;
   letter-spacing:.26em;
   text-transform:uppercase;
@@ -261,12 +270,12 @@ body > main, body > header, body > footer{ position:relative; z-index:1; }
   font-family:var(--mono); font-size:13px; font-weight:500;
   letter-spacing:.3em;
 }
-.wordmark__accent{ color:var(--velvet-hi); }
+.wordmark__accent{ color:var(--velvet-ink); }
 
 .topbar__ig{
   display:inline-flex; align-items:center; gap:8px;
   min-height:40px; padding:9px 15px;
-  font-family:var(--mono); font-size:10.5px;
+  font-family:var(--mono); font-size:11px;
   letter-spacing:.16em; text-transform:uppercase;
   color:var(--light-2); text-decoration:none;
   border:1px solid var(--rule-2);
@@ -358,7 +367,7 @@ body > main, body > header, body > footer{ position:relative; z-index:1; }
   padding-block:14px;
 }
 .cue__label{
-  font-family:var(--mono); font-size:10.5px;
+  font-family:var(--mono); font-size:11px;
   letter-spacing:.34em; text-transform:uppercase;
   color:var(--light-2);
   transition:color .3s var(--ease);
@@ -443,7 +452,7 @@ body > main, body > header, body > footer{ position:relative; z-index:1; }
 
 .btn--quiet{
   min-height:44px; padding:12px 18px;
-  font-size:10.5px;
+  font-size:11px;
   color:var(--light-2);
   border-color:var(--rule);
 }
@@ -594,7 +603,7 @@ body > main, body > header, body > footer{ position:relative; z-index:1; }
 }
 .poster__no{
   flex:0 0 auto;
-  font-family:var(--mono); font-size:9.5px;
+  font-family:var(--mono); font-size:11px;
   letter-spacing:.18em;
   color:rgba(244,236,225,.68);
   text-shadow:0 1px 4px rgba(0,0,0,.8);
@@ -604,7 +613,7 @@ body > main, body > header, body > footer{ position:relative; z-index:1; }
 .poster__tag{
   flex:0 1 auto; min-width:0;
   display:inline-flex; align-items:center; gap:6px;
-  font-family:var(--mono); font-size:9.5px;
+  font-family:var(--mono); font-size:11px;
   letter-spacing:.14em; text-transform:uppercase;
   color:rgba(244,236,225,.82);
   text-shadow:0 1px 4px rgba(0,0,0,.9);
@@ -633,7 +642,7 @@ body > main, body > header, body > footer{ position:relative; z-index:1; }
   display:flex; align-items:center; justify-content:center; gap:7px;
   background:rgba(6,3,4,.8);
   border-block:1px solid rgba(244,236,225,.18);
-  font-family:var(--mono); font-size:9.5px;
+  font-family:var(--mono); font-size:11px;
   letter-spacing:.16em; text-transform:uppercase;
   color:rgba(244,236,225,.9);
   text-align:center;
@@ -674,10 +683,10 @@ body > main, body > header, body > footer{ position:relative; z-index:1; }
 .card__meta{
   margin:7px 0 12px;
   display:flex; align-items:center; gap:8px;
-  font-family:var(--mono); font-size:9.5px;
-  letter-spacing:.16em; text-transform:uppercase;
+  font-family:var(--mono); font-size:11px;
+  letter-spacing:.14em; text-transform:uppercase;
   color:var(--light-4);
-  white-space:nowrap; overflow:hidden;
+  white-space:nowrap; overflow:hidden; flex-wrap:wrap; row-gap:4px;
 }
 .card__meta i{ width:10px; height:1px; background:var(--rule-2); flex:none; }
 
@@ -691,7 +700,7 @@ body > main, body > header, body > footer{ position:relative; z-index:1; }
   border:1px solid var(--rule);
   background:transparent;
   color:var(--light-4);
-  font-family:var(--mono); font-size:9.5px;
+  font-family:var(--mono); font-size:11px;
   letter-spacing:.2em; text-transform:uppercase;
   text-decoration:none; cursor:default;
   white-space:nowrap;
@@ -813,7 +822,7 @@ body > main, body > header, body > footer{ position:relative; z-index:1; }
   background:rgba(12,8,9,.95);
   backdrop-filter:blur(12px);
   -webkit-backdrop-filter:blur(12px);
-  font-family:var(--mono); font-size:10.5px;
+  font-family:var(--mono); font-size:11px;
   letter-spacing:.2em; text-transform:uppercase;
   color:var(--light);
   text-align:center;
@@ -839,7 +848,7 @@ body > main, body > header, body > footer{ position:relative; z-index:1; }
 }
 .credits__role{
   flex:0 0 auto;
-  font-family:var(--mono); font-size:9.5px;
+  font-family:var(--mono); font-size:11px;
   letter-spacing:.2em; text-transform:uppercase;
   color:var(--light-4);
 }
@@ -849,13 +858,15 @@ body > main, body > header, body > footer{ position:relative; z-index:1; }
   color:var(--light);
   text-decoration:none;
   transition:color .3s var(--ease);
+  /* A tappable row, not a 24px sliver of text. */
+  display:flex; align-items:center; justify-content:flex-end; min-height:44px;
 }
 a.credits__name:hover{ color:var(--velvet-hi); }
 
 .credits__end{
   margin:clamp(26px,5vw,40px) 0 0;
   text-align:center;
-  font-family:var(--mono); font-size:10px;
+  font-family:var(--mono); font-size:11px;
   letter-spacing:.5em; text-indent:.5em;
   color:var(--light-4);
 }
@@ -979,7 +990,7 @@ a.credits__name:hover{ color:var(--velvet-hi); }
 
 .ask__step{
   margin:14px 0 0;
-  font-family:var(--mono); font-size:10px;
+  font-family:var(--mono); font-size:11px;
   letter-spacing:.18em; text-transform:uppercase;
   color:var(--light-4);
 }
@@ -1037,7 +1048,7 @@ a.credits__name:hover{ color:var(--velvet-hi); }
 .dock.is-up{ transform:translate3d(0,0,0); }
 .dock__text{
   margin:0; min-width:0;
-  font-family:var(--mono); font-size:10.5px;
+  font-family:var(--mono); font-size:11px;
   letter-spacing:.16em; text-transform:uppercase;
   color:var(--light-2);
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;

@@ -205,6 +205,12 @@
             }).join('') + '</tr>';
           }).join('')
         : '<tr><td colspan="6">Nothing recorded yet.</td></tr>') + '</tbody>';
+
+    // Measured after layout, so the hint matches what is really on screen.
+    requestAnimationFrame(function () {
+      var wrap = document.querySelector('.tableWrap'), hint = $('tableHint');
+      if (wrap && hint) hint.hidden = !($('log').scrollWidth > wrap.clientWidth + 2);
+    });
   }
 
   /* ── Fetch ───────────────────────────────────────────────────────────
