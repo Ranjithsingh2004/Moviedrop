@@ -145,46 +145,41 @@ set on the server, never trusted from the browser.
 
 ### The backend
 
-The Convex functions live in `convex/`. They are **deployed and live** on the
-`quaint-kookabura-550` deployment, with `STATS_PASSPHRASE` set. Both routes
-are serving:
+The Convex functions live in `convex/`. They are deployed and live on the
+**production** deployment `outgoing-robin-116`, with `STATS_PASSPHRASE` set.
+Both routes are serving:
 
 ```
-POST  quaint-kookabura-550.convex.site/track    records an event
-GET   quaint-kookabura-550.convex.site/stats    aggregates, passphrase required
+POST  outgoing-robin-116.convex.site/track    records an event
+GET   outgoing-robin-116.convex.site/stats    aggregates, passphrase required
 ```
 
-The base URL is already set in `assets/config.js`. Blank that value out and
-the site records nothing and makes no requests.
+The base URL is set in `assets/config.js`. Blank that value out and the site
+records nothing and makes no requests.
 
-To change the passphrase — no redeploy needed:
+### Changing the passphrase
+
+No code change, no redeploy, takes effect on the next page load. Either:
+
+**In the browser** — open the Convex dashboard, go to
+Settings → Environment Variables, and edit `STATS_PASSPHRASE`:
+
+```
+https://dashboard.convex.dev/d/outgoing-robin-116/settings/environment-variables
+```
+
+**Or from the terminal:**
 
 ```bash
-npx convex env set STATS_PASSPHRASE "something-else"
+npx convex env set STATS_PASSPHRASE "whatever-you-want"
 ```
 
-To push code changes in `convex/`:
+The passphrase is only ever compared inside the Convex HTTP action, so it
+never reaches the browser and is not in this repo. Changing it locks out the
+old one immediately.
 
-```bash
-npx convex deploy
-```
-
-Both need you logged in (`npx convex dev` once) or a `CONVEX_DEPLOY_KEY` in
-the environment.
-
-### One thing to know about the deployment
-
-This is a Convex **development** deployment, not a production one. It works
-and it is serving real traffic, but two consequences are worth knowing:
-
-- Running `npx convex dev` from a machine with older code will push that code
-  over what is deployed now.
-- Convex treats dev deployments as disposable; a production deployment is the
-  durable home for something the public uses.
-
-Moving is cheap: create a production deployment, run `npx convex deploy` with
-its key, set `STATS_PASSPHRASE` on it, and change the one URL in
-`assets/config.js`. Historic events do not carry over.
+To push code changes in `convex/`, run `npx convex deploy`. That needs you
+logged in (`npx convex dev` once) or a `CONVEX_DEPLOY_KEY` in the environment.
 
 ### Why it is built this way
 

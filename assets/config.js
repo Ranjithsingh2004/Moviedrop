@@ -6,4 +6,4 @@
    reads <base>/stats. Blank it out and nothing is recorded, no requests are
    made, and the site behaves exactly as it did before.
    ========================================================================== */
-window.MOVIEDROP_STATS_URL = 'https://quaint-kookabura-550.convex.site';
+window.MOVIEDROP_STATS_URL = 'https://outgoing-robin-116.convex.site';
