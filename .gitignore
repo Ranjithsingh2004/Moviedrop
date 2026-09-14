@@ -4,3 +4,6 @@ node_modules/
 *.log
 convex/_generated/
 .env.local
+
+# Test-run screenshots (suites write these to the repo root)
+shot-*.png
