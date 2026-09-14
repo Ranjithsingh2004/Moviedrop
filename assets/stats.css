@@ -188,3 +188,9 @@
   .statsBody.is-busy .tiles,
   .statsBody.is-busy .panel{ transition:none; }
 }
+
+/* Nobody should be stranded watching reels turn. If the check has not come
+   back shortly, offer the way in by hand. */
+.booting__slow{ margin:26px auto 0; max-width:300px; }
+.booting__slow[hidden]{ display:none !important; }
+.booting__slowNote{ margin:0 0 14px; font-size:13px; color:var(--light-3); }

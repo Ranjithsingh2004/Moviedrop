@@ -211,35 +211,50 @@
      Convex HTTP actions send CORS headers, so this is an ordinary request.
      The passphrase is checked on the server; a wrong one gets a 401 and no
      data.                                                                 */
-  var key = '', days = 30, inflight = null;
+  var key = '', days = 30, inflight = null, token = 0;
 
-  function load(done) {
+  /* A request always settles. The abort timer is the only thing guaranteeing
+     that: without it a fetch that never answers — a blocked request, a dead
+     network — would leave the caller waiting forever. The timer fires the
+     callback itself rather than relying on the abort being observable, since
+     a browser without AbortController gives us nothing to abort.           */
+  function load(done, ms) {
     var base = (window.MOVIEDROP_STATS_URL || '').replace(/\/+$/, '');
     if (!base) { done('not-configured'); return; }
 
-    if (inflight) inflight.abort();
+    if (inflight) { try { inflight.abort(); } catch (e) {} }
+    var mine = ++token;
     var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
     inflight = ctrl;
-    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 15000);
+
+    var settled = false;
+    function finish(err, data) {
+      if (settled || mine !== token) return;   // superseded requests stay quiet
+      settled = true;
+      clearTimeout(timer);
+      inflight = null;
+      if (!err) { render(data); saveCache(data); }
+      done(err);
+    }
+
+    var timer = setTimeout(function () {
+      if (ctrl) { try { ctrl.abort(); } catch (e) {} }
+      finish('timeout');
+    }, ms || 9000);
 
     fetch(base + '/stats?key=' + encodeURIComponent(key) + '&days=' + days,
           ctrl ? { signal: ctrl.signal } : {})
       .then(function (r) {
-        clearTimeout(timer);
-        inflight = null;
-        if (r.status === 401) return r.json().then(function () { throw new Error('unauthorised'); });
+        if (r.status === 401) throw new Error('unauthorised');
         if (r.status === 500) return r.json().then(function (d) {
           throw new Error(d && d.error === 'no-passphrase-set' ? 'no-passphrase-set' : 'server');
         });
         if (!r.ok) throw new Error('http-' + r.status);
         return r.json();
       })
-      .then(function (data) { render(data); done(null); })
+      .then(function (data) { finish(null, data); })
       .catch(function (err) {
-        clearTimeout(timer);
-        inflight = null;
-        var name = err && err.name === 'AbortError' ? 'timeout' : (err && err.message) || 'network';
-        done(name);
+        finish(err && err.name === 'AbortError' ? 'timeout' : (err && err.message) || 'network');
       });
   }
 
@@ -249,7 +264,22 @@
      aggregate counts, but "Lock" clears it for a shared or borrowed one.
      sessionStorage is still read once, so anyone mid-session is not asked
      again the first time this version loads.                              */
-  var KEY = 'moviedrop.statskey';
+  var KEY = 'moviedrop.statskey', CACHE = 'moviedrop.statscache';
+
+  /* The numbers she last saw, kept on the device so reopening the page shows
+     them at once instead of a loading screen. Cleared by Lock, along with the
+     passphrase, so handing the phone over does not hand over the numbers.  */
+  function saveCache(d) {
+    try { localStorage.setItem(CACHE, JSON.stringify({ at: Date.now(), days: days, d: d })); } catch (e) {}
+  }
+  function readCache() {
+    try {
+      var r = JSON.parse(localStorage.getItem(CACHE) || 'null');
+      return r && r.d && r.days === 30 ? r : null;   // only the default range
+    } catch (e) { return null; }
+  }
+  function clearCache() { try { localStorage.removeItem(CACHE); } catch (e) {} }
+
 
   function readKey() {
     try { return localStorage.getItem(KEY) || sessionStorage.getItem(KEY) || ''; }
@@ -290,9 +320,9 @@
     var msg = reason === 'unauthorised' ? 'That passphrase does not match.'
             : reason === 'not-configured' ? 'No stats backend is set up yet. See README → Stats.'
             : reason === 'no-passphrase-set' ? 'The backend has no passphrase set. Run: npx convex env set STATS_PASSPHRASE "…"'
-            : reason === 'timeout' ? 'The backend did not answer. Check the deployment is live.'
+            : reason === 'timeout' ? 'The backend did not answer. If this device has an ad or content blocker, it may be blocking this page — allow this site, or try another browser.'
             : /^http-404$/.test(reason) ? 'The stats route is not deployed yet. Run: npx convex deploy'
-            : 'Could not reach the backend.';
+            : 'Could not reach the backend. If this device has an ad or content blocker, it may be blocking this page — allow this site and try again.';
     lockErr.textContent = msg;
     lockErr.hidden = false;
     $('passInput').value = '';
@@ -317,6 +347,7 @@
 
   $('lockBtn').addEventListener('click', function () {
     forgetKey();
+    clearCache();
     key = '';
     lastData = null;
     showLock();
@@ -376,18 +407,58 @@
     document.querySelector('.lockCard').appendChild(n);
   }
 
+  var slowTimer = null;
+
+  function bootWatchdog(on) {
+    clearTimeout(slowTimer);
+    if (!on) { $('bootSlow').hidden = true; return; }
+    slowTimer = setTimeout(function () { $('bootSlow').hidden = false; }, 4000);
+  }
+
+  $('bootPass').addEventListener('click', function () {
+    bootWatchdog(false);
+    token++;                       // ignore whatever the pending request does
+    showLock();
+  });
+
   var saved = readKey();
-  if (saved) {
-    // The head script is already showing the loading screen for this case.
+
+  if (!saved) {
+    showLock();
+  } else {
     key = saved;
+    var cached = readCache();
+
+    if (cached) {
+      // Show the numbers she last saw straight away, then refresh behind them.
+      render(cached.d);
+      showDash();
+      $('stamp').textContent = 'Last 30 days · showing saved numbers, refreshing…';
+      busy(true);
+    } else {
+      bootWatchdog(true);
+    }
+
     load(function (err) {
+      bootWatchdog(false);
+      busy(false);
+
       if (!err) { showDash(); return; }
-      // A passphrase that no longer works is worth forgetting; a network
-      // blip is not, so a later reload can resume without retyping.
-      if (err === 'unauthorised') forgetKey();
+
+      // A passphrase the backend rejects is worth forgetting. Anything else is
+      // probably this device or this network, so keep it and let her retry.
+      if (err === 'unauthorised') { forgetKey(); clearCache(); showLock(err); return; }
+
+      if (cached) {
+        // Stale numbers beat no numbers, as long as it says so.
+        showDash();
+        $('stamp').textContent = err === 'timeout'
+          ? 'Showing saved numbers — the backend did not answer.'
+          : 'Showing saved numbers — could not reach the backend (' + err + ').';
+        return;
+      }
       showLock(err);
     });
-  } else {
-    showLock();
   }
+
 })();
