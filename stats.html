@@ -13,8 +13,29 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="assets/styles.css">
 <link rel="stylesheet" href="assets/stats.css">
+<script>
+  /* Before first paint: if this device already has a passphrase stored, show
+     the loading screen instead of the form, so coming back doesn't look like
+     being logged out. stats.js decides what is actually true. */
+  try {
+    if (localStorage.getItem('moviedrop.statskey') ||
+        sessionStorage.getItem('moviedrop.statskey')) {
+      document.documentElement.className += ' has-key';
+    }
+  } catch (e) {}
+</script>
 </head>
 <body class="statsPage">
+
+<div class="booting" id="booting">
+  <div class="booting__inner">
+    <div class="threading__reels" aria-hidden="true">
+      <span class="reel reel--feed"><svg class="reel__svg" viewBox="0 0 100 100"><g fill="none" stroke="currentColor" stroke-width="2.6"><circle cx="50" cy="50" r="46"/><circle cx="50" cy="50" r="40.5" stroke-width="1.1" stroke-opacity=".5"/><circle cx="50" cy="50" r="8.5"/><circle cx="50.0" cy="22.0" r="10.5"/><circle cx="74.2" cy="36.0" r="10.5"/><circle cx="74.2" cy="64.0" r="10.5"/><circle cx="50.0" cy="78.0" r="10.5"/><circle cx="25.8" cy="64.0" r="10.5"/><circle cx="25.8" cy="36.0" r="10.5"/></g></svg></span>
+      <span class="reel reel--take"><svg class="reel__svg" viewBox="0 0 100 100"><g fill="none" stroke="currentColor" stroke-width="2.6"><circle cx="50" cy="50" r="46"/><circle cx="50" cy="50" r="40.5" stroke-width="1.1" stroke-opacity=".5"/><circle cx="50" cy="50" r="8.5"/><circle cx="50.0" cy="22.0" r="10.5"/><circle cx="74.2" cy="36.0" r="10.5"/><circle cx="74.2" cy="64.0" r="10.5"/><circle cx="50.0" cy="78.0" r="10.5"/><circle cx="25.8" cy="64.0" r="10.5"/><circle cx="25.8" cy="36.0" r="10.5"/></g></svg></span>
+    </div>
+    <p class="slug booting__note" id="bootNote">Reading the reel</p>
+  </div>
+</div>
 
 <div class="lockScreen" id="lockScreen">
   <form class="lockCard" id="lockForm">
@@ -44,12 +65,14 @@
         <button class="range is-on" data-days="30" type="button">30 days</button>
         <button class="range" data-days="365" type="button">All</button>
       </div>
+      <button class="btn btn--ghost btn--quiet statsBar__lock" id="lockBtn" type="button">Lock</button>
     </div>
   </header>
 
   <div class="shell statsBody">
 
     <p class="slug" id="stamp"></p>
+    <p class="slug busyNote" id="busyNote" hidden>Rewinding…</p>
 
     <!-- Headline numbers -->
     <section class="tiles" id="tiles" aria-label="Headline numbers"></section>

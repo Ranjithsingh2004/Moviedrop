@@ -5,5 +5,7 @@ node_modules/
 convex/_generated/
 .env.local
 
-# Test-run screenshots (suites write these to the repo root)
-shot-*.png
+# Test-run screenshots (suites write these to the repo root).
+# Anchored to the root so a real asset named the same way is unaffected.
+/shot-*.png
+/m-*.png

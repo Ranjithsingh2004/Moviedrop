@@ -150,3 +150,41 @@
 @media (prefers-reduced-motion:reduce){
   .chart .mark,.tip{ transition:none; }
 }
+
+/* ── Coming back ──────────────────────────────────────────────────────────
+   An inline script in the head sets .has-key before first paint when this
+   device has a stored passphrase, so a returning visitor sees the reels
+   turning rather than a passphrase form that vanishes a moment later.
+   stats.js clears the class once it knows what is actually true.          */
+.has-key .lockScreen{ display:none; }
+.has-key .booting{ display:flex; }
+
+.booting{
+  display:none;
+  position:fixed; inset:0; z-index:40;
+  align-items:center; justify-content:center;
+  background:var(--ink-0);
+}
+.booting[hidden]{ display:none !important; }
+.booting__inner{ text-align:center; }
+.booting .threading__reels{ justify-content:center; }
+.booting__note{ margin:18px 0 0; color:var(--light-4); }
+
+/* ── Refreshing in place ──────────────────────────────────────────────────
+   A range switch refetches. Rather than blanking the charts, the old numbers
+   stay put and fade slightly, so it reads as "updating" not "gone".        */
+.busyNote{ margin:-6px 0 0; color:var(--velvet-hi); }
+.busyNote[hidden]{ display:none !important; }
+.statsBody.is-busy .tiles,
+.statsBody.is-busy .panel{ opacity:.45; transition:opacity .18s; }
+.statsBody.is-busy .range{ pointer-events:none; }
+
+.statsBar__lock{ flex:none; }
+
+/* The submit button while a passphrase is being checked. */
+.btn.is-pending{ opacity:.6; pointer-events:none; }
+
+@media (prefers-reduced-motion:reduce){
+  .statsBody.is-busy .tiles,
+  .statsBody.is-busy .panel{ transition:none; }
+}

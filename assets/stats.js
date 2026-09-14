@@ -243,6 +243,46 @@
       });
   }
 
+  /* ── Where the passphrase is kept ────────────────────────────────────
+     localStorage, so checking the numbers on a phone doesn't mean retyping
+     it every time. It is her own device and the passphrase only ever reads
+     aggregate counts, but "Lock" clears it for a shared or borrowed one.
+     sessionStorage is still read once, so anyone mid-session is not asked
+     again the first time this version loads.                              */
+  var KEY = 'moviedrop.statskey';
+
+  function readKey() {
+    try { return localStorage.getItem(KEY) || sessionStorage.getItem(KEY) || ''; }
+    catch (e) { return ''; }
+  }
+  function saveKey(v) {
+    try { localStorage.setItem(KEY, v); sessionStorage.removeItem(KEY); } catch (e) {}
+  }
+  function forgetKey() {
+    try { localStorage.removeItem(KEY); sessionStorage.removeItem(KEY); } catch (e) {}
+  }
+
+  /* ── Screens ─────────────────────────────────────────────────────────── */
+  var root = document.documentElement;
+
+  function showLock(reason) {
+    root.classList.remove('has-key');
+    $('booting').hidden = true;
+    $('lockScreen').hidden = false;
+    $('dash').hidden = true;
+    if (reason) fail(reason); else lockErr.hidden = true;
+    var f = $('passInput');
+    if (f && !/mobile|android|iphone/i.test(navigator.userAgent)) f.focus();
+  }
+
+  function showDash() {
+    root.classList.remove('has-key');
+    $('booting').hidden = true;
+    $('lockScreen').hidden = true;
+    $('dash').hidden = false;
+    if (lastData) render(lastData);   // now that the panels have a width
+  }
+
   /* ── Wiring ──────────────────────────────────────────────────────────── */
   var lockErr = $('lockErr');
 
@@ -256,20 +296,30 @@
     lockErr.textContent = msg;
     lockErr.hidden = false;
     $('passInput').value = '';
-    $('passInput').focus();
   }
 
   $('lockForm').addEventListener('submit', function (e) {
     e.preventDefault();
     lockErr.hidden = true;
+    var btn = $('lockForm').querySelector('button[type=submit]');
+    var was = btn.textContent;
+    btn.classList.add('is-pending');
+    btn.textContent = 'Checking…';
     key = $('passInput').value.trim();
     load(function (err) {
-      if (err) { fail(err); return; }
-      try { sessionStorage.setItem('moviedrop.statskey', key); } catch (x) {}
-      $('lockScreen').hidden = true;
-      $('dash').hidden = false;
-      if (lastData) render(lastData);      // now that it has a width
+      btn.classList.remove('is-pending');
+      btn.textContent = was;
+      if (err) { fail(err); $('passInput').focus(); return; }
+      saveKey(key);
+      showDash();
     });
+  });
+
+  $('lockBtn').addEventListener('click', function () {
+    forgetKey();
+    key = '';
+    lastData = null;
+    showLock();
   });
 
   var rt;
@@ -278,12 +328,29 @@
     rt = setTimeout(function () { if (lastData) render(lastData); }, 180);
   }, { passive: true });
 
+  /* A range switch refetches. The numbers already on screen stay where they
+     are and dim, so it reads as updating rather than emptying out.        */
+  function busy(on) {
+    document.querySelector('.statsBody').classList.toggle('is-busy', !!on);
+    $('busyNote').hidden = !on;
+  }
+
   document.querySelectorAll('.range').forEach(function (b) {
     b.addEventListener('click', function () {
+      var prev = document.querySelector('.range.is-on');
       document.querySelectorAll('.range').forEach(function (o) { o.classList.remove('is-on'); });
       b.classList.add('is-on');
       days = parseInt(b.getAttribute('data-days'), 10);
-      load(function (err) { if (err) $('stamp').textContent = 'Could not refresh (' + err + ')'; });
+      busy(true);
+      load(function (err) {
+        busy(false);
+        if (!err) return;
+        // Leave the numbers that are on screen alone and say why they are stale.
+        if (prev) { b.classList.remove('is-on'); prev.classList.add('is-on'); days = parseInt(prev.getAttribute('data-days'), 10); }
+        $('stamp').textContent = err === 'unauthorised'
+          ? 'The passphrase changed — tap Lock and sign in again.'
+          : 'Could not refresh (' + err + ') — showing the last numbers that loaded.';
+      });
     });
   });
 
@@ -300,25 +367,27 @@
     setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
   });
 
-  // Come straight back in within the same tab.
-  try {
-    var saved = sessionStorage.getItem('moviedrop.statskey');
-    if (saved) {
-      key = saved;
-      load(function (err) {
-        if (err) return;
-        $('lockScreen').hidden = true;
-        $('dash').hidden = false;
-        if (lastData) render(lastData);
-      });
-    }
-  } catch (e) {}
-
+  /* ── Boot ────────────────────────────────────────────────────────────── */
   if (!window.MOVIEDROP_STATS_URL) {
     var n = $('note');
     n.hidden = false;
     n.innerHTML = 'No stats backend is configured yet. Put your Convex HTTP Actions URL into ' +
                   '<code>assets/config.js</code> — the steps are in the README under <b>Stats</b>.';
     document.querySelector('.lockCard').appendChild(n);
+  }
+
+  var saved = readKey();
+  if (saved) {
+    // The head script is already showing the loading screen for this case.
+    key = saved;
+    load(function (err) {
+      if (!err) { showDash(); return; }
+      // A passphrase that no longer works is worth forgetting; a network
+      // blip is not, so a later reload can resume without retyping.
+      if (err === 'unauthorised') forgetKey();
+      showLock(err);
+    });
+  } else {
+    showLock();
   }
 })();
