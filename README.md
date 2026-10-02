@@ -27,6 +27,35 @@ on the next page load.
 
 Blank rows are ignored. Duplicate title+year rows are ignored.
 
+### The order films appear in
+
+**By default the newest film is on top.** Add a row at the bottom of the sheet,
+the way you normally would, and it appears first on the site. Nothing else to
+do — this is the whole feature for most days.
+
+To take control, add an **order** column and put a number next to the films you
+want pinned to the top. Lowest number first.
+
+| movie | ott | link | order |
+|---|---|---|---|
+| Vikram | Netflix | https://… | 1 |
+| Saaho | Prime Video | https://… | 2 |
+| Psycho | YouTube | https://… | |
+
+That shows Vikram, then Saaho, then everything without a number — newest first.
+So you can pin two or three favourites up top and let the rest look after
+themselves; there is no need to number every row.
+
+Three details worth knowing:
+
+- Decimals work. To slot a film between 1 and 2, write `1.5` rather than
+  renumbering everything below it.
+- Two rows with the same number stay in the order they appear in the sheet.
+- Anything that is not a number — a blank, a stray word — is treated as empty,
+  so a typo can never hide a film. It just falls into the newest-first group.
+
+The column can also be called `sort`, `rank`, `position` or `priority`.
+
 ### Why the year matters
 
 Lots of films share a name. *Psycho* is Hitchcock's 1960 film, a 1998 remake,

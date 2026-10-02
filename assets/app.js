@@ -220,7 +220,7 @@
      Sheet -> movie objects
      ===================================================================== */
   function findColumns(header) {
-    var idx = { title: -1, ott: -1, link: -1, poster: -1, year: -1 };
+    var idx = { title: -1, ott: -1, link: -1, poster: -1, year: -1, order: -1 };
 
     header.forEach(function (raw, i) {
       var k = normKey(raw);
@@ -229,6 +229,8 @@
       if (idx.link   < 0 && (k === 'link' || k === 'url' || k === 'watchlink' || k === 'links' || k === 'watch')) idx.link = i;
       if (idx.poster < 0 && (k === 'poster' || k === 'image' || k === 'img' || k === 'thumbnail' || k === 'posterurl')) idx.poster = i;
       if (idx.year   < 0 && (k === 'year' || k === 'released' || k === 'releaseyear' || k === 'releasedate')) idx.year = i;
+      if (idx.order  < 0 && (k === 'order' || k === 'sort' || k === 'sortorder' || k === 'rank' ||
+                             k === 'position' || k === 'pos' || k === 'priority')) idx.order = i;
     });
 
     // Sheet uses plain A/B/C with no recognisable header — fall back to order.
@@ -251,7 +253,7 @@
     var seen = {};
     var out = [];
 
-    body.forEach(function (r) {
+    body.forEach(function (r, row) {
       var cell = function (i) { return (i >= 0 && r[i] != null) ? String(r[i]).trim() : ''; };
 
       var rawTitle = cell(idx.title);
@@ -271,11 +273,36 @@
         year:   year,
         ott:    resolveOtt(cell(idx.ott)),
         link:   cleanUrl(cell(idx.link)),
-        poster: upscalePoster(cleanUrl(cell(idx.poster)))
+        poster: upscalePoster(cleanUrl(cell(idx.poster))),
+        order:  cleanOrder(cell(idx.order)),
+        row:    row
       });
     });
 
-    return out;
+    return sortMovies(out);
+  }
+
+  /* Ordering. Two rules, so that doing nothing does the right thing:
+
+     A number in the Order column pins a film, lowest number first. Decimals
+     work, so 1.5 slots between 1 and 2 without renumbering the rest.
+
+     Everything else follows, newest first — which means the row furthest down
+     the sheet, since a new film gets typed on the next empty line. Adding a
+     film therefore puts it on top without her touching anything else.      */
+  function cleanOrder(v) {
+    if (v === '') return null;
+    var n = Number(String(v).replace(/,/g, '.'));
+    return isFinite(n) ? n : null;
+  }
+
+  function sortMovies(list) {
+    return list.slice().sort(function (a, b) {
+      var an = a.order !== null, bn = b.order !== null;
+      if (an && bn) return a.order - b.order || a.row - b.row;  // ties keep sheet order
+      if (an !== bn) return an ? -1 : 1;                        // numbered films first
+      return b.row - a.row;                                     // the rest, newest first
+    });
   }
 
   function fetchText(url) {
